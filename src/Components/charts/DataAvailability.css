@@ -1,0 +1,7 @@
+.chart-container {
+    transition: width 0.3s ease, height 0.3s ease; /* Adjust duration as needed */
+  }
+
+  .expanding-field {
+    transition: width 0.3s ease; /* Smooth transition on width change */
+  }

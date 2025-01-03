@@ -1,0 +1,198 @@
+.meter-details-container {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    position: relative; 
+    width: 100%; 
+    gap: 30px;
+
+}
+.ag-theme-quartz {
+  --ag-header-background-color: #51a7d2;
+  --ag-header-foreground-color: rgb(225,225,225);
+}
+  
+  .form-group {
+    position: relative;
+  }
+
+  .ag-cell a {
+    color: blue;               
+    cursor: pointer;        
+  }
+  
+  
+  .ag-cell a:hover {
+    color:  blue;            
+    text-decoration: none;       
+  }
+
+  .floating-label {
+    position: absolute;
+    top: -10px;
+    left: 10px;
+    background-color: white;
+    padding: 0 5px;
+    font-size: 0.85rem;
+    color: #333;
+    z-index: 1;
+  }
+  .form-floating {
+    margin-bottom: 15px; 
+  }
+  .dropdown-tree {
+    margin-top: 15px; 
+    width: 100%;
+  }
+.form-title {
+    background-color: #0081c2;
+    color: white;                
+    padding: 0px 8px;              
+    border-radius: 4px 4px 0 0;  
+    text-align: left;           
+    font-size: 18px;
+    margin-bottom: 20px;        
+}
+.dropdown-wrapper {
+    position: relative;
+    margin-bottom: 20px; 
+  }
+  
+  .export-buttons-container .export-button {
+    margin-right: 10px; 
+  }
+  
+  .export-buttons-container .export-button:last-child {
+    margin-right: 0; 
+  }
+.meter-details-form {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 10px;
+}
+
+.form-row {
+    position: relative; 
+}
+
+.form-row select.form-control,
+.form-row input[type="text"] {
+    padding: 5px; 
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+
+}
+
+.form-row label {
+    position: absolute; 
+    left: 12px;
+    top: 10px;
+    color: #aaa; 
+    transition: all 0.2s ease;
+    pointer-events: none; 
+ 
+}
+.form-control {
+    position: relative;
+    
+}
+
+.form-row input[type="text"]:focus + label,
+.form-row input[type="text"]:not(:placeholder-shown) + label {
+    padding: 5px;
+    top: -8px; 
+    left: 10px; 
+    font-size: 13px; 
+    color: #000; 
+}
+
+
+.form-row input[type="text"]:placeholder-shown + label {
+    top: 12px; 
+    left: 12px; 
+    font-size: 13px; 
+    color: #aaa; 
+}
+
+
+.form-row select.form-control:focus + label,
+.form-row select.form-control:not(:placeholder-shown) + label {
+    top: -8px; 
+    left: 10px; 
+    font-size: 13px; 
+    color: #000; 
+}
+
+
+.form-row select.form-control + label {
+    left: 12px; 
+    font-size: 13px; 
+
+}
+
+.form-row select.form-control:not(:empty) + label {
+    left: 10px; 
+    font-size: 13px; 
+    color: #000; 
+}
+
+.form-row select.form-control {
+  padding: 3px; /* Reduce padding */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%; /* Adjust as needed, e.g., '50%' for smaller width */
+  font-size: 12px; /* Smaller font size */
+  height: 30px; /* Decrease the height */
+  line-height: normal; /* Reset line height for smaller components */
+}
+
+
+.submitbutt {
+    grid-column: span 1;
+    padding: 7px 15px;
+    background-color: #69acf3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+  
+  
+  .export-button {
+    background-color: #69acf3;; 
+    border: none;
+    color: white; 
+    padding: 5px 50px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    text-align: center;
+    outline: none; 
+    box-shadow: none; 
+    transition: background-color 0.3s;
+    margin-top: 5px;
+    margin-left: 5px;
+  }
+=
+
+
+  .export-button:hover {
+    background-color: #69acf3; 
+  }
+  
+  .export-button:focus {
+    box-shadow: 0 0 4px #69acf3; 
+  }
+
+.submit-button:hover {
+    background-color: #48688a;
+}
+
+
+.clicked-cell {
+  color: rgb(53, 142, 201);           
+  transition: background-color 0.3s ease; 
+}
