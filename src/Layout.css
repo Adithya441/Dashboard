@@ -8,6 +8,7 @@
     background-color: rgb(128, 128, 128,0.3) !important;
     color: #000000;
     border-radius: 5px;
+    height: 40px;
 }
 
 .ant-tabs-tab-btn{
@@ -40,19 +41,17 @@
 
 .ant-tabs-card .ant-tabs-tab {
   background-color: white;
-  font-size: 10px;
-  margin-right: 10px;
+  font-size: 12px;
 }
 
 .ant-tabs-card .ant-tabs-tab-active {
-  font-size: 16px;
-  margin-right: 10px;
+  font-size: 13px;
+  margin-right: 1px;
   font-weight: 600;
 }
 
 .ant-tabs-card {
   background-color: rgb(255, 255, 255);
-
 }
 
 .ant-tabs-card .ant-tabs-tab-active {
@@ -107,4 +106,8 @@
 
 .custom-tabs .ant-tabs-tab {
   transition: all 0.3s ease;
+}
+
+:where(.css-dev-only-do-not-override-77tu7h).ant-tabs .ant-tabs-tab+.ant-tabs-tab {
+  margin: 0 0 0 2px;
 }
