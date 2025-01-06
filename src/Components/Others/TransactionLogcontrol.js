@@ -12,7 +12,7 @@ const TransactionLogcontrol = () => {
  
   return (
     <div>
-      <div style={{direction:'rtl'}}>
+      {/* <div style={{direction:'rtl'}}>
         <FontAwesomeIcon 
           icon={faRotateRight} 
           onClick={reloadComponent} 
@@ -23,7 +23,7 @@ const TransactionLogcontrol = () => {
             margin:'10px'
           }} 
         />
-      </div>
+      </div> */}
       <TransactionLog key={key} />
     </div>
   );

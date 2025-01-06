@@ -20,6 +20,7 @@ import GroupOnDemandControlreload from "./Components/Meter_Details/GroupOnDemand
 import CommunicationStatistics from "./Components/Dashboard/Communication Statistics/CommunicationStatistics";
 import "./Layout.css";
 import TransactionLogcontrol from "./Components/Others/TransactionLogcontrol";
+import Alarms from "./Components/Others/Alarms";
 
 const { Header, Sider, Content } = Layout;
 const { TabPane } = Tabs;
@@ -33,6 +34,7 @@ const componentsMap = {
   Reconnect: Reconnectreload,
   Communicationstatistics: CommunicationStatistics,
   transactionlog: TransactionLogcontrol,
+  alarms: Alarms,
 };
 
 const Hello = () => {
@@ -171,6 +173,7 @@ const Hello = () => {
           </SubMenu>
           <SubMenu key="Others" icon={<UserOutlined />} title="Others">
             <Menu.Item key="transactionlog" style={{ paddingLeft: "30px" , fontSize:'11px' }}>Transaction Log</Menu.Item>
+            <Menu.Item key="alarms" style={{ paddingLeft: "30px" , fontSize:'11px' }}>Alarms</Menu.Item>
           </SubMenu>
         </Menu>
       </Sider>
