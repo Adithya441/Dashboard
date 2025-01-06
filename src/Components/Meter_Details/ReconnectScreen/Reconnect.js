@@ -1,4 +1,4 @@
-import { Form, Row, Col, Button ,InputGroup} from "react-bootstrap";
+import { Form, Row, Col, Button ,InputGroup,Modal} from "react-bootstrap";
 import { useState, useEffect, useCallback, useRef } from 'react';
 import ExcelJS from 'exceljs';
 import * as XLSX from 'xlsx';
@@ -9,17 +9,28 @@ import 'jspdf-autotable';
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
+import { FaCheckCircle } from "react-icons/fa";
+
 function Reconnect() {
   const [meternumber, setMeternumber] = useState("");
   const [office] = useState("3459274e-f20f-4df8-a960-b10c5c228d3e");
   const [meterdata, setMeterdata] = useState("");
+  const [originalMeterDetails, setOriginalMeterDetails] = useState([]);
   const [allmeterdetails, setAllmeterdetails] = useState("");
   const [loading, setLoading] = useState(false);
   const [showtable, setShowtable] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
   const [searchKey, setSearchKey] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const[show,setShow]=useState(false);
+  const [dto, setDto] = useState({});
+  const [metertoken, setMeterToken] = useState([]); 
+  const [transactionId, setTransactionId] = useState("");
  
   
+  
+  const handleShow = () => setShow(true);
+
 
   const ColumnDefs = [
     { headerName: "Meter Number", field: "meterNumber" },
@@ -27,15 +38,22 @@ function Reconnect() {
     { headerName: "Comments", field: "comments" },
     { headerName: "Reason", field: "reason" },
     { headerName: "Request From", field: "responseFrom" },
-    { headerName: "Request Time", field: "requestTime" },
-    { headerName: "Response Time", field: "responseTime" },
+    { 
+      headerName: "Request Time", 
+      field: "requestTime",
+      valueFormatter: (params) => formatDateTime(params.value),
+    },
+    { 
+      headerName: "Response Time", 
+      field: "responseTime",
+      valueFormatter: (params) => formatDateTime(params.value),
+    },
     { headerName: "Transaction Status", field: "responseCode" },
   ];
 
   
 
   const tokenUrl = "/api/server3/UHES-0.0.1/oauth/token";
-
   const fetchAccessToken = useCallback(async () => {
     const response = await fetch(tokenUrl, {
       method: "POST",
@@ -63,15 +81,33 @@ function Reconnect() {
           headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
+  
       if (!response.ok) throw new Error("Failed to fetch meter details");
+  
       const responsedata = await response.json();
+      console.log("Response Data:", responsedata.data);
+      if (!Array.isArray(responsedata.data) || responsedata.data.length === 0) {
+        throw new Error("No data found in response");
+      }
+      const firstItem = responsedata.data[0];
+      const dto = {
+        connectiontype: firstItem.relaystatus,
+        meterno: firstItem.meterno,
+        "reason": "string",
+        type: firstItem.metertype,
+        "userId": "string"
+      }
+      console.log("DTO:", dto);
+      setDto(dto);
       setMeterdata(responsedata.data);
+  
     } catch (error) {
-      console.error(error.message);
+      console.error("Error:", error.message);
     } finally {
       setLoading(false);
     }
   };
+ 
 
   const fetchAllMeterDetails = async () => {
     setLoading(true);
@@ -86,6 +122,7 @@ function Reconnect() {
       if (!response.ok) throw new Error("Failed to fetch all meter details");
       const allmeterdata = await response.json();
       setAllmeterdetails(allmeterdata.data);
+      setOriginalMeterDetails(allmeterdata.data);
     } catch (error) {
       console.error(error.message);
     } finally {
@@ -93,11 +130,66 @@ function Reconnect() {
     }
   };
 
+ 
+  const meterconnection = async (dto) => {
+    console.log(dto)
+    setLoading(true); 
+    try {
+      const accessToken = await fetchAccessToken();
+      console.log("Request Body:", JSON.stringify(dto)); 
+      const response = await fetch(
+        `/api/server3/UHES-0.0.1/WS/FepgetMeterConnectionDisconnection`,
+        {
+          method: "POST", 
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(dto), 
+        }
+      );
+      console.log("Raw Response:", response); 
+      if (!response.ok) throw new Error("Failed to process meter connection/disconnection");
+      const data = await response.json();
+      console.log(data); 
+      setMeterToken(data); 
+      localStorage.setItem("meterToken", JSON.stringify(data));
+    } catch (error) {
+      console.error("Error:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
+  useEffect(() => {
+    const savedMeterToken = localStorage.getItem("meterToken");
+    if (savedMeterToken) {
+      setMeterToken(JSON.parse(savedMeterToken));
+      console.log("Restored metertoken from localStorage:", savedMeterToken);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (metertoken && metertoken.data) {
+      console.log("Updated metertoken:", metertoken);
+      setTransactionId(metertoken.data[0].transactionId);
+    }
+  }, [metertoken]);
+ 
+  if (metertoken && metertoken.data) {
+    console.log(metertoken.data[0].transactionId);
+  } else {
+    console.log("Metertoken is null or data is unavailable");
+  }
+   
   useEffect(() => {
     if (showtable || showGrid) {
       fetchMeterDetails();
     }
   }, [showtable, showGrid, meternumber]);
+
+ 
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -106,6 +198,12 @@ function Reconnect() {
     fetchMeterDetails();
     fetchAllMeterDetails();
   };
+
+  const handleConnect = (e) =>{
+    e.preventDefault();
+    setShowModal(true);
+    meterconnection(dto);  
+  }
 
   const exportExcel = async () => {
     await fetchAllMeterDetails();
@@ -197,23 +295,48 @@ function Reconnect() {
     doc.save("Reconnect.pdf");
   };
 
+
+
+  console.log(allmeterdetails);
   const searchData = (e) => {
     const searchValue = e.target.value;
     setSearchKey(searchValue);
+    console.log(searchValue)
     if (searchValue === "") {
-        setMeterdata(meterdata.data);
-        console.log(meterdata.data)
-        console.log(meterdata.data)
+        setAllmeterdetails(originalMeterDetails);//here we took an extra variable to store the data
     } else {
-      const filteredData = meterdata.data.datafilter((row) =>
+      const filteredData = originalMeterDetails.filter((row) =>
         Object.values(row).some((val) =>
           String(val).toLowerCase().includes(searchValue.toLowerCase())
         )
       );
-      setMeterdata(filteredData);
+      setAllmeterdetails(filteredData);
+      console.log(filteredData)
     }
   };
 
+  const handleClose = () => {
+    console.log("Closing modal");
+    setShowModal(false);
+  };
+
+
+  // Function to format the date and time
+const formatDateTime = (timestamp) => {
+  if (!timestamp) return ''; // Handle null or undefined values
+  const date = new Date(timestamp);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+};
+
+useEffect(()=>{
+  fetchAllMeterDetails()
+},[transactionId])
   return (
     <div>
       <h1 className="form-title">Reconnect Screen</h1>
@@ -263,7 +386,7 @@ function Reconnect() {
           </table>
           <center>
             <div className="text-center mt-3">
-              <Button type="submit" className="submitbutt" variant="primary">
+              <Button type="submit" className="submitbutt" variant="primary" onClick={handleConnect}>
                 Connect
               </Button>
             </div>
@@ -285,14 +408,7 @@ function Reconnect() {
           </Button>
         </Col>
         <Col xs={12} md={4} className="ms-auto">
-          <InputGroup>
-            <Form.Control
-              type="text"
-              placeholder="Search"
-              value={searchKey}
-              onChange={searchData}
-            />
-          </InputGroup>
+          <input type="text" className="form-control" placeholder="search" value={searchKey} onChange={searchData} />
         </Col>
       </Row>
           <div
@@ -310,6 +426,23 @@ function Reconnect() {
           </div>
         </div>
       )}
+      <Modal show={showModal} onHide={() =>setShowModal(false)}>
+      <Modal.Header style={{ display: "flex", justifyContent: "center", alignItems: "center"}}>
+      <Modal.Title style={{ textAlign: "center" }}>
+        <FaCheckCircle style={{ color: "green", fontSize: "3rem" }} />
+      </Modal.Title>
+    </Modal.Header>
+    <Modal.Body className="text-center">
+    <p style={{ fontWeight: 'bold', fontSize: '20px', color: 'black' }}>
+      Request Sent Successfully With : {transactionId}
+    </p>
+  </Modal.Body>
+      <Modal.Footer style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <Button variant="primary"style={{ textAlign: "center" }} onClick={handleClose}>
+        OK
+      </Button>
+    </Modal.Footer>
+      </Modal>
     </div>
   );
 }
