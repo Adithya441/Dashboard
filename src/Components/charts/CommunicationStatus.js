@@ -10,6 +10,7 @@ export default function CommunicationStatus({ officeid }) {
   const [selectedData, setSelectedData] = useState(null);
   const [selectlabel, setSelectLabel] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [dataavailable, setDataAvailable] = useState(null);
   const [chartData, setChartData] = useState(null);
 
   const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
@@ -33,7 +34,9 @@ export default function CommunicationStatus({ officeid }) {
       });
 
       if (!tokenResponse.ok) {
-        return <p>No Data available</p>
+        setLoading(false);
+        setDataAvailable("No Data Available");
+        return;
       }
 
       const tokenData = await tokenResponse.json();
@@ -46,18 +49,20 @@ export default function CommunicationStatus({ officeid }) {
       });
 
       if (!dataResponse.ok) {
-        return <p>No Data available</p>
+        setLoading(false);
+        setDataAvailable("No Data Available");
+        return;
       }
 
       const responseData = await dataResponse.json();
-      if(!responseData){
+      if (!responseData || !responseData.ydata1 || !responseData.xData) {
         setLoading(false);
-        return <p>No Data available</p>
+        setDataAvailable("No Data Available");
+        return;
       }
       const total = responseData.ydata1.slice(0, 3).reduce((acc, curr) => acc + curr, 0);
       const series = responseData.ydata1.slice(0, 3);
       const labels = responseData.xData.slice(0, 3);
-      
 
       console.log('Fetched data:', responseData);
       setChartData({ total, series, labels });
@@ -65,7 +70,7 @@ export default function CommunicationStatus({ officeid }) {
     } catch (err) {
       console.error('Error fetching data:', err.message);
       setLoading(false);
-      setChartData(null);
+      setDataAvailable("No Data Available");
     }
   }, [officeid]);
 
@@ -81,8 +86,12 @@ export default function CommunicationStatus({ officeid }) {
     return <p>Loading...</p>;
   }
 
+  if (dataavailable) {
+    return <div className="no-data-available">{dataavailable}</div>;
+  }
+
   if (!chartData || !chartData.series || !chartData.labels) {
-    return <h5 style={{ marginTop: '160px', marginLeft: '100px' }}>No data available.</h5>;
+    return <div>No Data Available</div>;
   }
 
   const { total, series, labels } = chartData;

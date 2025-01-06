@@ -2,7 +2,6 @@ import React, { useState, useEffect,useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
-import { ClientSideRowModelModule } from 'ag-grid-community';
 import './MeterDetails.css';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -11,7 +10,7 @@ import { Form, Row, Col, Button } from "react-bootstrap";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import ExcelJS from 'exceljs';
-import { TreeSelect } from 'antd'
+import { TreeSelect, Spin } from 'antd'
 
 const renameKeys = (data, keyMap) => {
   return data.map((item) => {
@@ -31,7 +30,7 @@ const renameKeys = (data, keyMap) => {
   });
 };
 
-function MeterDetails({onMeterClick, officeidChange }) {
+function MeterDetail({onMeterClick, officeidChange }) {
   const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
  
   const [loading, setLoading] = useState(false);
@@ -55,18 +54,18 @@ function MeterDetails({onMeterClick, officeidChange }) {
   const length = 10;
  
   const columnDefs = [
-    { headerName: "Meter No", field: "meterno", onCellClicked: (params) => {
-      onMeterClick(params.data);},
-      cellStyle: { color: 'red !important', backgroundColor: 'green !important' } },
+    { headerName: "Meter No", field: "meterno", 
+      onCellClicked: (params) => {
+      onMeterClick(params.data);
+    },
+    cellClass: "blue-cell", 
+  },
     { headerName: "Meter Type", field: "metertype" },
     { headerName: "Meter Manufacture", field: "metermake" },
     { headerName: "Meter Interface", field: "meterInterface" },
     { headerName: "Payment Type", field: "paymenttype" },
     { headerName: "Relay Status", field: "relaystatus" },
-  ];
-
- 
-  
+  ];  
  
   const data = [{
     "code": "Fluentgrid",
@@ -946,13 +945,12 @@ const setPage = (page) => {
     <AgGridReact
       columnDefs={columnDefs.map((col) => ({
         ...col,
-        headerClass: 'custom-header',
+        headerClass: 'custom-header'
       }))}
       rowData={meterData}
       pagination={false}
       domLayout="normal"
       defaultColDef={defaultColDef}
-      modules={[ClientSideRowModelModule]}
     />
   </div>
 )}
@@ -1060,4 +1058,4 @@ const setPage = (page) => {
     </div>
   );
 }
-export default MeterDetails;
+export default MeterDetail;

@@ -7,10 +7,9 @@ import jsPDF from 'jspdf'; // Import for PDF
 import 'jspdf-autotable'; // Import for using autotable with jsPDF
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import loadingGif from '../../Assets/img2.gif';
-import { ClientSideRowModelModule } from 'ag-grid-community';
+import loadingGif from '../../Assets/img2.gif'
 
-const Apicall = ({ selectedLabel, office }) => {
+const Apicall = ({ selectedLabel , office }) => {
   const [data, setData] = useState([]); // Ensure data is an array
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -18,24 +17,22 @@ const Apicall = ({ selectedLabel, office }) => {
   const [recordsTotal, setRecordsTotal] = useState(0); // Total records count
   const length = 10; // Number of records per page
   const [exportFormat, setExportFormat] = useState(''); // Selected export format
-  const [gridApi, setGridApi] = useState(null); // AG Grid API reference
-  const [gridColumnApi, setGridColumnApi] = useState(null); // AG Grid Column API reference
-
-  const [fromDate, setFromDate] = useState('');
-  useEffect(() => {
+  let fromDate;
+  useEffect(()=>{
     const date = new Date();
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
     const day = String(date.getDate()).padStart(2, '0');
 
-    const todaydate = `${year}${month}${day}`;
-    setFromDate(todaydate);
-  }, []);
+    const todaydate = year + month + day;
+    fromDate = todaydate;
+})
 
   const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
 
   const fetchData = useCallback(async () => {
     setError(null);
+    console.log(selectedLabel);
     try {
       const tokenResponse = await fetch(tokenUrl, {
         method: 'POST',
@@ -53,37 +50,51 @@ const Apicall = ({ selectedLabel, office }) => {
       const tokenData = await tokenResponse.json();
       const accessToken = tokenData.access_token;
 
+      // Use the updated start parameter for pagination
       const baseUrl = `/api/server3/UHES-0.0.1/WS/ServerpaginationForCommunicationReport?office=${office}&fromdate=${fromDate}&TOTAL_COUNT=&draw=2&start=${start}&length=${length}`;
       const baseUrl1 = `/api/server3/UHES-0.0.1/WS/ServerpaginationForNonCommunicationReport?office=${office}&fromdate=${fromDate}&TOTAL_COUNT=&draw=2&start=${start}&length=${length}`;
       const baseUrl2 = `/api/server3/UHES-0.0.1/WS/ServerpaginationForNeverCommunicatedMetersReport?Date=${fromDate}&OfficeId=${office}&draw=1&length=${length}&start=${start}`;
+      if(selectedLabel === 'COMMUNICATED'){
+        const dataResponse = await fetch(baseUrl, {
+          headers: { 'Authorization': `Bearer ${accessToken}` },
+        });
+        if (!dataResponse.ok) throw new Error('Failed to fetch data');
+        const responseData = await dataResponse.json();
 
-      let dataResponse;
-      if (selectedLabel === 'COMMUNICATED') {
-        dataResponse = await fetch(baseUrl, {
-          headers: { Authorization: `Bearer ${accessToken}` },
+        // Set records total from API response
+        setRecordsTotal(responseData.recordsTotal || 0); // Update this key based on your API response
+        setData(responseData.data || []);
+      }
+      else if(selectedLabel === 'NOT COMMUNICATED'){
+        const dataResponse = await fetch(baseUrl1, {
+          headers: { 'Authorization': `Bearer ${accessToken}` },
         });
-      } else if (selectedLabel === 'NOT COMMUNICATED') {
-        dataResponse = await fetch(baseUrl1, {
-          headers: { Authorization: `Bearer ${accessToken}` },
+        if (!dataResponse.ok) throw new Error('Failed to fetch data');
+        const responseData = await dataResponse.json();
+
+        // Set records total from API response
+        setRecordsTotal(responseData.recordsTotal || 0); // Update this key based on your API response
+        setData(responseData.data || []);
+      }
+      else if(selectedLabel === 'NEVER COMMUNICATED'){
+        const dataResponse = await fetch(baseUrl2, {
+          headers: { 'Authorization': `Bearer ${accessToken}` },
         });
-      } else if (selectedLabel === 'NEVER COMMUNICATED') {
-        dataResponse = await fetch(baseUrl2, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
+        if (!dataResponse.ok) throw new Error('Failed to fetch data');
+        const responseData = await dataResponse.json();
+
+        // Set records total from API response
+        setRecordsTotal(responseData.recordsTotal || 0); // Update this key based on your API response
+        setData(responseData.data || []);
       }
 
-      if (!dataResponse.ok) throw new Error('Failed to fetch data');
-      const responseData = await dataResponse.json();
-      console.log(responseData);
-
-      setRecordsTotal(responseData.recordsTotal || 0);
-      setData(responseData.data || []);
+       // Set data to responseData.data or an empty array
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [fromDate, start, length, selectedLabel, office]);
+  }, [fromDate, start, length]);
 
   useEffect(() => {
     fetchData();
@@ -91,25 +102,12 @@ const Apicall = ({ selectedLabel, office }) => {
 
   // AG Grid column definitions
   const columnDefs = [
-    {
-      headerName: 'METERNO',
-      field: 'METERNO',
-      flex: 1,
-      filter: true,
-      sortable: true,
-      valueFormatter: (params) => (params.value ? params.value : 'N/A'),
-    },
-    {
-      headerName: 'MeterLastCommunicated',
-      field: 'MeterLastCommunicated',
-      flex: 1,
-      filter: true,
-      sortable: true,
-      valueFormatter: (params) => (params.value ? params.value : 'N/A'),
-    },
+    { headerName: "METERNO", field: "METERNO", flex: 1, filter: true, sortable: true, valueFormatter: (params) => params.value ? params.value : "N/A" },
+    { headerName: "MeterLastCommunicated", field: "MeterLastCommunicated", flex: 1, filter: true, sortable: true , valueFormatter: (params) => params.value ? params.value : "N/A"},
+    // Add more columns based on your data structure
   ];
 
-  // Pagination handlers
+  // Handler for pagination
   const handleNextPage = () => setStart((prevStart) => prevStart + length);
   const handlePreviousPage = () => setStart((prevStart) => Math.max(prevStart - length, 0));
 
@@ -117,54 +115,90 @@ const Apicall = ({ selectedLabel, office }) => {
   const currentPage = Math.floor(start / length) + 1;
   const totalPages = Math.ceil(recordsTotal / length);
 
-  // AG Grid Event Handlers for API references
-  const onGridReady = (params) => {
-    setGridApi(params.api);
-    setGridColumnApi(params.columnApi);
-  };
-
-  // Export to CSV
+  // Export function for CSV
   const exportToCSV = () => {
-    if (gridApi) {
-      gridApi.exportDataAsCsv();
-    }
+    const csvData = data.map(row => ({
+      METERNO: row.METERNO,
+      MeterLastCommunicated: row.MeterLastCommunicated,
+      // Add other fields as needed
+    }));
+
+    const csvContent = [
+      Object.keys(csvData[0]).join(','), // Header
+      ...csvData.map(row => Object.values(row).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', `${selectedLabel}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
-  // Export to Excel using ExcelJS
+  // Export function for Excel with adjusted column widths
   const exportToExcel = async () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Data');
     const headers = Object.keys(data[0] || {});
-    const title = worksheet.addRow([`${selectedLabel}`]); // Title row
-    title.font = { bold: true, size: 16 };
+    const title = worksheet.addRow([`${selectedLabel}`]); // Replace with your title text
+    title.font = { bold: true, size: 16, color: { argb: 'FFFF00' } }; // Set font color and size
+    title.alignment = { horizontal: 'center' };
     worksheet.mergeCells('A1', `${String.fromCharCode(64 + headers.length)}1`);
 
     const headerRow = worksheet.addRow(headers);
-    headerRow.font = { bold: true };
 
-    data.forEach((row) => {
-      worksheet.addRow(Object.values(row));
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FFFFFF' } }; // White font color
+      cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFADD8E6' }, // Black background color
+      };
+  });
+
+    // Add data rows
+    data.forEach(row => {
+        worksheet.addRow(Object.values(row));
     });
 
-    worksheet.columns.forEach((column) => {
-      const maxLength = column.values.reduce((prev, curr) => Math.max(prev, curr?.toString().length || 0), 10);
-      column.width = maxLength + 2;
-    });
-
-    const buffer = await workbook.xlsx.writeBuffer();
-    saveAs(new Blob([buffer]), `${selectedLabel}.xlsx`);
+    worksheet.autoFilter = {
+      from: 'A2', // Starting cell of the filter (top-left corner)
+      to: `${String.fromCharCode(64 + headers.length)}2` // Ending cell (top-right corner based on header count)
   };
 
-  // Export to PDF
+    // Adjust column widths based on the max length of the column data
+    headers.forEach((header, index) => {
+        const maxLength = Math.max(
+            header.length, // Length of the header
+            ...data.map(row => row[header] ? row[header].toString().length : 0) // Length of the content
+        );
+        worksheet.getColumn(index + 1).width = maxLength + 2; // Adding padding
+    });
+
+    // Generate Excel file and trigger download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, `${selectedLabel}.xlsx`);
+};
+
+  // Export function for PDF
   const exportToPDF = () => {
     const doc = new jsPDF();
-    doc.autoTable({
-      head: [['METERNO', 'MeterLastCommunicated']],
-      body: data.map((row) => [row.METERNO, row.MeterLastCommunicated]),
+    const tableColumn = ["METERNO", "MeterLastCommunicated"]; // Add more columns based on your data structure
+    const tableRows = [];
+
+    data.forEach(row => {
+      tableRows.push([row.METERNO, row.MeterLastCommunicated]);
+      // Add other fields as needed
     });
+
+    doc.autoTable(tableColumn, tableRows);
     doc.save(`${selectedLabel}.pdf`);
   };
 
+  // Handle export format change
   const handleExport = (value) => {
     switch (value) {
       case 'csv':
@@ -190,7 +224,7 @@ const Apicall = ({ selectedLabel, office }) => {
           id="export-format"
           value={exportFormat}
           onChange={(e) => handleExport(e.target.value)}
-          style={{ height: '30px' }}
+          style={{height:'30px'}}
         >
           <option value="">Export</option>
           <option value="csv">CSV</option>
@@ -200,34 +234,22 @@ const Apicall = ({ selectedLabel, office }) => {
       </div>
 
       {loading ? (
-        <img src={loadingGif} alt="Loading..." style={{ width: '150px', height: '150px', margin: '50px 350px' }} />
+        <img src={loadingGif} alt="Loading..." style={{ width: '150px', height: '150px', margin:'50px 350px' }} />
       ) : (
         <div className="ag-theme-alpine" style={{ height: 400, width: '100%', marginTop: '20px' }}>
-          <AgGridReact
-            rowData={data}
-            columnDefs={columnDefs}
-            onGridReady={onGridReady}
-            pagination={true}
-            paginationPageSize={length}
-            modules={[ClientSideRowModelModule]}
-          />
+          <AgGridReact rowData={data} columnDefs={columnDefs} onGridReady={fetchData} />
         </div>
       )}
 
-      <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
-        <button onClick={handlePreviousPage} disabled={start === 0}>
-          Previous
-        </button>
-        <span>
+      <div style={{ marginTop: '20px', display:'flex', justifyContent:'space-between' }}>
+        <span style={{ marginLeft: '10px' }}>
           Page {currentPage} of {totalPages}
         </span>
-        <button onClick={handleNextPage} disabled={start + length >= recordsTotal}>
-          Next
-        </button>
+        <button onClick={handlePreviousPage} disabled={start === 0} style={{backgroundColor:'black', color:'white'}}>Previous</button>
+        <button onClick={handleNextPage} disabled={start + length >= recordsTotal} style={{backgroundColor:'black', color:'white'}}>Next</button>
       </div>
     </div>
   );
 };
 
 export default Apicall;
-

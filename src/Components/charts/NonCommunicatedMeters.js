@@ -8,6 +8,7 @@ const NonCommunicatedMeters = ({officeid}) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedData, setSelectedData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [dataavailable, setDataAvailable] = useState(null);
   const [chartData, setChartData] = useState(null);
   const [selectlabel,setSelectLabel] = useState(null);
 
@@ -42,10 +43,12 @@ const NonCommunicatedMeters = ({officeid}) => {
       if (!dataResponse.ok) return <p>No Data available</p>
 
       const responseData = await dataResponse.json();
-      if(!responseData || !responseData.xData || !responseData.yData){
-        setChartData('');
-        setLoading(false)
-        return <p>No Data available</p>
+      if (
+        !responseData || !responseData.yData || !responseData.xData
+      ) {
+        setLoading(false);
+        setDataAvailable("No Data Available");
+        return;
       }
       
       // Directly set xData and yData for chart rendering
@@ -64,11 +67,6 @@ const NonCommunicatedMeters = ({officeid}) => {
     setLoading(true); // Reset loading state when officeid changes
     fetchData();
   }, [officeid]);
-
-  if (loading) return <p>Loading...</p>;
-  if (!chartData) return <h5 style={{marginTop:'160px', marginLeft:'100px'}}>No data available.</h5>;
-
-  const { labels, series } = chartData;
 
   const options = {
     chart: {
@@ -92,8 +90,8 @@ const NonCommunicatedMeters = ({officeid}) => {
     },
       events: {
         dataPointSelection: (event, chartContext, config) => {
-          const selectedLabel = labels[config.dataPointIndex];
-          const selectedValue = series[0].data[config.dataPointIndex];
+          const selectedLabel = chartData.labels[config.dataPointIndex];
+          const selectedValue = chartData.series[0].data[config.dataPointIndex];
           setSelectedData({ label: selectedLabel, value: selectedValue });
           setShowModal(true);
           setSelectLabel(selectedLabel);
@@ -101,7 +99,7 @@ const NonCommunicatedMeters = ({officeid}) => {
       },
     },
     xaxis: {
-      categories: labels,
+      categories: chartData ? chartData.labels : [],
     },
     colors: ['#619ED6'],
     plotOptions: {
@@ -147,16 +145,23 @@ const NonCommunicatedMeters = ({officeid}) => {
   return (
     <div className='blck3'>
       <h5 className='chart-name'>Non Communicated Meters</h5>
-      <div className='charts3'>
-        <ReactApexChart
-          options={options}
-          series={series}
-          type="bar"
-          width="100%"
-          height="100%"
-        />
-      </div>
-
+      {loading ? (
+        <div>Loading...</div>
+      ) : dataavailable ? (
+        <div className="no-data-available">{dataavailable}</div>
+      ) : chartData ? (
+        <div className="charts3">
+          <ReactApexChart
+            options={options}
+            series={chartData.series}
+            type="bar"
+            width="100%"
+            height="100%"
+          />
+        </div>
+      ) : (
+        <div>No Data Available</div>
+      )}
       {showModal && (
         <div
           style={{

@@ -1,0 +1,110 @@
+.ant-tabs-nav-wrap {
+    margin-bottom: 0 !important;
+    background-color: aliceblue;
+    position: sticky;
+}
+
+.ant-tabs-tab{
+    background-color: rgb(128, 128, 128,0.3) !important;
+    color: #000000;
+    border-radius: 5px;
+}
+
+.ant-tabs-tab-btn{
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.ant-tabs-tab-active{
+    background-color: rgb(128, 128, 128,0.9) !important;
+    color: #000000;
+}
+
+
+.ant-tabs-tab-active {
+  background-color: rgb(255, 255, 255) !important;
+  color: white !important;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2) !important; /* Add box shadow */
+  border: 1px solid #089bab; /* Add border color */
+  border-radius: 5px; /* Optional: make border rounded */
+}
+.ant-tabs-nav {
+  margin: 0;
+  padding: 0;
+}
+
+.ant-tabs-card .ant-tabs-card-head {
+  background-color: #f0f0f0;
+  padding: 12px;
+}
+
+.ant-tabs-card .ant-tabs-tab {
+  background-color: white;
+  font-size: 10px;
+  margin-right: 10px;
+}
+
+.ant-tabs-card .ant-tabs-tab-active {
+  font-size: 16px;
+  margin-right: 10px;
+  font-weight: 600;
+}
+
+.ant-tabs-card {
+  background-color: rgb(255, 255, 255);
+
+}
+
+.ant-tabs-card .ant-tabs-tab-active {
+  background-color: #1890ff;
+  color: white;
+}
+
+/* Default menu item styles */
+.ant-menu-item {
+  color: #fff !important; /* Default text color */
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+}
+
+/* Hover effect */
+.ant-menu-item:hover {
+  background-color: rgba(24, 144, 255,0.4) !important; /* Darker background on hover */
+}
+
+/* Active menu item */
+.ant-menu-item-selected {
+  background-color: #1890ff !important; /* Blue background for active item */
+  color: white !important; /* White text for active item */
+  border-radius: 4px; /* Optional: Rounded corners */
+}
+
+/* Submenu title styles */
+.ant-menu-submenu-title {
+  color: white !important; /* Default text color */
+}
+
+/* Hover effect for submenu title */
+.ant-menu-submenu-title:hover {
+  color: #1890ff !important; /* Blue text on hover */
+}
+
+/* Collapsed sidebar menu item styles */
+.ant-menu-item.collapsed {
+  text-align: center; /* Center text or icons */
+  color: #ccc !important; /* Light gray for collapsed items */
+}
+
+/* Style for the sidebar */
+.ant-layout-sider {
+  background-color: #089bab !important; /* Background color for the sidebar */
+}
+
+.custom-tabs .ant-tabs-tab-active {
+  
+  background-color: rgb(128, 128, 128,0.9) !important;
+  color: #000000;
+}
+
+.custom-tabs .ant-tabs-tab {
+  transition: all 0.3s ease;
+}

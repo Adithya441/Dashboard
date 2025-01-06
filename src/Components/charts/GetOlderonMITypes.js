@@ -8,7 +8,6 @@ import 'jspdf-autotable'; // Import for using autotable with jsPDF
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import loadingGif from '../../Assets/img2.gif'
-import { ClientSideRowModelModule } from 'ag-grid-community';
 
 const GetOlderonMITypes = ({ selectedLabel, selectedCategory, office }) => {
   const [data, setData] = useState([]); // Ensure data is an array
@@ -199,7 +198,7 @@ const GetOlderonMITypes = ({ selectedLabel, selectedCategory, office }) => {
         <img src={loadingGif} alt="Loading..." style={{ width: '150px', height: '150px', margin:'50px 350px' }} />
       ) : (
         <div className="ag-theme-alpine" style={{ height: 400, width: '100%', marginTop: '20px' }}>
-          <AgGridReact rowData={data} columnDefs={columnDefs} onGridReady={fetchData} modules={[ClientSideRowModelModule]}/>
+          <AgGridReact rowData={data} columnDefs={columnDefs} onGridReady={fetchData} />
         </div>
       )}
 

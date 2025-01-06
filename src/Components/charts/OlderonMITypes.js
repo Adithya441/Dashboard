@@ -144,26 +144,24 @@ const OlderonMITypes = ({officeid}) => {
   }, [officeid]);
   
 
-  if (loading) return <p>Loading...</p>;
-  
-
-  const handleClose = () => setShowModal(false);
-
   return (
     <div className="blck1">
       <h5 className='chart-name'>Older Based on MI Types</h5>
-      {dataavailable === null ? (
+      {loading ? (
+        <div>Loading...</div>
+      ) : dataavailable ? (
+        <div className="no-data-available">{dataavailable}</div>
+      ) : chartData ? (
         <div className="charts1">
           <ReactApexChart
             options={chartData.options}
             series={chartData.series}
             type="bar"
-            width="100%"
             height="100%"
           />
         </div>
       ) : (
-        <div className='NDA'>{dataavailable}</div>
+        <div>No Data Available</div>
       )}
 
       {showModal && (
@@ -184,7 +182,7 @@ const OlderonMITypes = ({officeid}) => {
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h5 id="contained-modal-title-vcenter">{selectlabel}</h5>
-            <button onClick={handleClose} style={{ background: 'none', border: 'none', fontSize: '1.5rem' }}>
+            <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.5rem' }}>
               &times;
             </button>
           </div>
@@ -194,7 +192,7 @@ const OlderonMITypes = ({officeid}) => {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1em' }}>
-            <button onClick={handleClose} style={{ padding: '0.5em 1em', cursor: 'pointer' }}>
+            <button onClick={() => setShowModal(false)} style={{ padding: '0.5em 1em', cursor: 'pointer' }}>
               Close
             </button>
           </div>

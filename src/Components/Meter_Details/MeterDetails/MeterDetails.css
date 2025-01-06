@@ -1,74 +1,92 @@
 .meter-details-container {
-    padding: 10px;
+    padding: 16px;
     border: 1px solid #ccc;
     border-radius: 8px;
     position: relative; 
     width: 100%; 
-    gap: 30px;
-
+    gap: 10px;
 }
+
 .ag-theme-quartz {
-  --ag-header-background-color: #51a7d2;
-  --ag-header-foreground-color: rgb(225,225,225);
+    --ag-header-background-color: #51a7d2;
+    --ag-header-foreground-color: rgb(225,225,225);
 }
   
-  .form-group {
+.form-group {
     position: relative;
-  }
+    margin-bottom: 15px;
+}
 
-  .ag-cell a {
+.ag-cell a {
     color: blue;               
     cursor: pointer;        
-  }
+}
   
-  
-  .ag-cell a:hover {
-    color:  blue;            
-    text-decoration: none;       
-  }
+.ag-cell a:hover {
+    color: #0056b3;            
+    text-decoration: underline;       
+}
 
-  .floating-label {
+.floating-label {
     position: absolute;
     top: -10px;
     left: 10px;
     background-color: white;
-    padding: 0 5px;
+    padding: 0 4px;
     font-size: 0.85rem;
     color: #333;
     z-index: 1;
-  }
-  .form-floating {
+    transition: all 0.2s ease;
+}
+
+.form-floating {
     margin-bottom: 15px; 
-  }
-  .dropdown-tree {
+}
+
+.dropdown-tree {
     margin-top: 15px; 
     width: 100%;
-  }
+}
+
 .form-title {
     background-color: #0081c2;
     color: white;                
-    padding: 0px 8px;              
+    padding: 8px 16px;              
     border-radius: 4px 4px 0 0;  
     text-align: left;           
     font-size: 18px;
     margin-bottom: 20px;        
 }
+
 .dropdown-wrapper {
     position: relative;
     margin-bottom: 20px; 
-  }
+}
   
-  .export-buttons-container .export-button {
+.export-buttons-container .export-button {
     margin-right: 10px; 
-  }
+}
   
-  .export-buttons-container .export-button:last-child {
+.export-buttons-container .export-button:last-child {
     margin-right: 0; 
-  }
+}
+
 .meter-details-form {
     display: grid;
     grid-template-columns: repeat(3, 1fr); 
-    gap: 10px;
+    gap: 20px;
+}
+
+@media (max-width: 992px) {
+    .meter-details-form {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .meter-details-form {
+        grid-template-columns: 1fr;
+    }
 }
 
 .form-row {
@@ -77,91 +95,61 @@
 
 .form-row select.form-control,
 .form-row input[type="text"] {
-    padding: 5px; 
+    padding: 8px 12px; 
     border: 1px solid #ccc;
     border-radius: 5px;
     width: 100%;
-
+    height: 40px;
 }
 
 .form-row label {
     position: absolute; 
     left: 12px;
-    top: 10px;
-    color: #aaa; 
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666; 
     transition: all 0.2s ease;
     pointer-events: none; 
- 
+    background: white;
+    padding: 0 4px;
 }
+
 .form-control {
     position: relative;
-    
 }
 
 .form-row input[type="text"]:focus + label,
-.form-row input[type="text"]:not(:placeholder-shown) + label {
-    padding: 5px;
-    top: -8px; 
-    left: 10px; 
-    font-size: 13px; 
-    color: #000; 
+.form-row input[type="text"]:not(:placeholder-shown) + label,
+.form-row select:focus + label,
+.form-row select:not([value=""]) + label {
+    top: 0;
+    transform: translateY(-50%) scale(0.85);
+    color: #0081c2;
 }
 
-
-.form-row input[type="text"]:placeholder-shown + label {
-    top: 12px; 
-    left: 12px; 
-    font-size: 13px; 
-    color: #aaa; 
+.form-row input[type="text"]:focus,
+.form-row select:focus {
+    border-color: #0081c2;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0,129,194,0.2);
 }
-
-
-.form-row select.form-control:focus + label,
-.form-row select.form-control:not(:placeholder-shown) + label {
-    top: -8px; 
-    left: 10px; 
-    font-size: 13px; 
-    color: #000; 
-}
-
-
-.form-row select.form-control + label {
-    left: 12px; 
-    font-size: 13px; 
-
-}
-
-.form-row select.form-control:not(:empty) + label {
-    left: 10px; 
-    font-size: 13px; 
-    color: #000; 
-}
-
-.form-row select.form-control {
-  padding: 3px; /* Reduce padding */
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  width: 100%; /* Adjust as needed, e.g., '50%' for smaller width */
-  font-size: 12px; /* Smaller font size */
-  height: 30px; /* Decrease the height */
-  line-height: normal; /* Reset line height for smaller components */
-}
-
 
 .submitbutt {
     grid-column: span 1;
-    padding: 7px 15px;
+    padding: 0px;
     background-color: #69acf3;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 12px;
+    width: 100px;
+    height: 30px;
 }
 
   
   
-  .export-button {
+.export-button {
     background-color: #69acf3;; 
     border: none;
     color: white; 
@@ -175,24 +163,22 @@
     transition: background-color 0.3s;
     margin-top: 5px;
     margin-left: 5px;
-  }
-=
+}
 
-
-  .export-button:hover {
+.export-button:hover {
     background-color: #69acf3; 
-  }
-  
-  .export-button:focus {
+}
+
+.export-button:focus {
     box-shadow: 0 0 4px #69acf3; 
-  }
+}
 
 .submit-button:hover {
     background-color: #48688a;
 }
 
-
-.clicked-cell {
-  color: rgb(53, 142, 201);           
-  transition: background-color 0.3s ease; 
+.blue-cell {
+    color: blue;
+    font-weight: 600;
+    cursor: pointer;
 }

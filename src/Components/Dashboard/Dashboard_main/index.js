@@ -683,20 +683,20 @@ const Index = () => {
 
 
         <Row className="mb-3 g-2">
-          <Col md={4} className="d-flex">
+          <Col md={4}>
             <CommunicationStatus key={office} officeid={office} />
           </Col>
-          <Col md={4} className="d-flex">
+          <Col md={4}>
             <NonCommunicatedMeters key={office} officeid={office} />
           </Col>
-          <Col md={4} className="d-flex">
+          <Col md={4}>
             <NeverCommunicatedMeters key={office} officeid={office} />
           </Col>
         </Row>
 
 
         <Row className="mb-3">
-          <Col md={12} className="d-flex">
+          <Col md={12}>
             <LoadSwitchStatus key={office} officeid={office} />
           </Col>
         </Row>

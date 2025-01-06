@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import { ClientSideRowModelModule } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import * as XLSX from 'xlsx';
@@ -8,20 +7,17 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import loadingGif from '../../Assets/img2.gif';
+import loadingGif from '../../Assets/img2.gif'
 
 const GetNeverCommunicated = ({ selectedLabel, office }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [fromDate, setFromDate] = useState('');
+  const [fromDate, setFromDate] = useState(null);
   const [start, setStart] = useState(0);
   const [recordsTotal, setRecordsTotal] = useState(0);
-  const [exportFormat, setExportFormat] = useState('');
-  const [gridApi, setGridApi] = useState(null);
-  const [gridColumnApi, setGridColumnApi] = useState(null);
-
   const length = 10;
+  const [exportFormat, setExportFormat] = useState('');
 
   useEffect(() => {
     const date = new Date();
@@ -29,17 +25,14 @@ const GetNeverCommunicated = ({ selectedLabel, office }) => {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
 
-    const todaydate = `${year}${month}${day}`;
+    const todaydate = year + month + day;
     setFromDate(todaydate);
   }, []);
 
   const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
 
   const fetchData = useCallback(async () => {
-    if (!fromDate) return;
-
     setError(null);
-    setLoading(true);
 
     try {
       const tokenResponse = await fetch(tokenUrl, {
@@ -58,14 +51,12 @@ const GetNeverCommunicated = ({ selectedLabel, office }) => {
       const tokenData = await tokenResponse.json();
       const accessToken = tokenData.access_token;
 
-      const baseUrl = `/api/server3/UHES-0.0.1/WS/getCommissionedButNotCommunicatedReport?Flag=${selectedLabel}&OfficeId=${office}&start=${start}&length=${length}`;
+      const baseUrl = `/api/server3/UHES-0.0.1/WS/getCommissionedButNotCommunicatedReport?Flag=${selectedLabel}&OfficeId=${office}`;
       const dataResponse = await fetch(baseUrl, {
         headers: { 'Authorization': `Bearer ${accessToken}` },
       });
 
-      if (!dataResponse.ok) throw new Error('Failed to fetch data');
       const responseData = await dataResponse.json();
-
       setRecordsTotal(responseData.recordsTotal || 0);
       setData(responseData.data || []);
     } catch (err) {
@@ -73,23 +64,16 @@ const GetNeverCommunicated = ({ selectedLabel, office }) => {
     } finally {
       setLoading(false);
     }
-  }, [fromDate, selectedLabel, office, start, length]);
+  }, [selectedLabel, start, length]);
 
   useEffect(() => {
-    if (fromDate) {
-      fetchData();
-    }
+    if (fromDate) fetchData();
   }, [fetchData, fromDate]);
 
   const columnDefs = [
-    { headerName: "METERNO", field: "METER_NUMBER", flex: 1, filter: true, sortable: true },
-    { headerName: "MeterLastCommunicated", field: "COMM_DATE", flex: 1, filter: true, sortable: true },
+    { headerName: "METERNO", field: "METER_NUMBER", flex: 1, filter: true, sortable: true , valueFormatter: (params) => params.value ? params.value : "N/A"},
+    { headerName: "MeterLastCommunicated", field: "COMM_DATE", flex: 1, filter: true, sortable: true , valueFormatter: (params) => params.value ? params.value : "N/A"},
   ];
-
-  const onGridReady = (params) => {
-    setGridApi(params.api);
-    setGridColumnApi(params.columnApi);
-  };
 
   const handleNextPage = () => setStart((prevStart) => prevStart + length);
   const handlePreviousPage = () => setStart((prevStart) => Math.max(prevStart - length, 0));
@@ -98,56 +82,85 @@ const GetNeverCommunicated = ({ selectedLabel, office }) => {
   const totalPages = Math.ceil(recordsTotal / length);
 
   const exportToCSV = () => {
-    if (gridApi) {
-      gridApi.exportDataAsCsv({ fileName: `${selectedLabel}_NeverCommunicated.csv` });
-    }
+    const csvData = data.map(row => ({
+      METERNO: row.METERNO,
+      MeterLastCommunicated: row.MeterLastCommunicated,
+      // Add other fields as needed
+    }));
+
+    const csvContent = [
+      Object.keys(csvData[0]).join(','), // Header
+      ...csvData.map(row => Object.values(row).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', `${selectedLabel}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
+  // Export function for Excel with adjusted column widths
   const exportToExcel = async () => {
-    if (gridApi) {
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Data');
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Data');
+    const headers = Object.keys(data[0] || {});
+    const title = worksheet.addRow([`${selectedLabel}`]); // Replace with your title text
+    title.font = { bold: true, size: 16, color: { argb: 'FFFF00' } }; // Set font color and size
+    title.alignment = { horizontal: 'center' };
+    worksheet.mergeCells('A1', `${String.fromCharCode(64 + headers.length)}1`);
 
-      const headerRow = worksheet.addRow([`${selectedLabel} Never Communicated Meters`]);
-      headerRow.font = { bold: true, size: 16 };
-      worksheet.mergeCells(`A1:${String.fromCharCode(65 + columnDefs.length - 1)}1`);
+    const headerRow = worksheet.addRow(headers);
 
-      const columnHeaders = columnDefs.map(col => col.headerName);
-      worksheet.addRow(columnHeaders);
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FFFFFF' } }; // White font color
+      cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFADD8E6' }, // Black background color
+      };
+  });
 
-      gridApi.forEachNodeAfterFilterAndSort((node) => {
-        const rowData = columnDefs.map(col => node.data[col.field]);
-        worksheet.addRow(rowData);
-      });
+    // Add data rows
+    data.forEach(row => {
+        worksheet.addRow(Object.values(row));
+    });
 
-      columnDefs.forEach((col, index) => {
-        worksheet.getColumn(index + 1).width = 15;
-      });
-
-      const buffer = await workbook.xlsx.writeBuffer();
-      saveAs(new Blob([buffer]), `${selectedLabel}_NeverCommunicated.xlsx`);
-    }
+    worksheet.autoFilter = {
+      from: 'A2', // Starting cell of the filter (top-left corner)
+      to: `${String.fromCharCode(64 + headers.length)}2` // Ending cell (top-right corner based on header count)
   };
 
+    // Adjust column widths based on the max length of the column data
+    headers.forEach((header, index) => {
+        const maxLength = Math.max(
+            header.length, // Length of the header
+            ...data.map(row => row[header] ? row[header].toString().length : 0) // Length of the content
+        );
+        worksheet.getColumn(index + 1).width = maxLength + 2; // Adding padding
+    });
+
+    // Generate Excel file and trigger download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, `${selectedLabel}.xlsx`);
+};
+
+  // Export function for PDF
   const exportToPDF = () => {
-    if (gridApi) {
-      const doc = new jsPDF();
-      const tableColumn = columnDefs.map(col => col.headerName);
-      const tableRows = [];
+    const doc = new jsPDF();
+    const tableColumn = ["METERNO", "MeterLastCommunicated"]; // Add more columns based on your data structure
+    const tableRows = [];
 
-      gridApi.forEachNodeAfterFilterAndSort((node) => {
-        const rowData = columnDefs.map(col => node.data[col.field]);
-        tableRows.push(rowData);
-      });
+    data.forEach(row => {
+      tableRows.push([row.METERNO, row.MeterLastCommunicated]);
+      // Add other fields as needed
+    });
 
-      doc.text(`${selectedLabel} Never Communicated Meters`, 14, 15);
-      doc.autoTable({
-        head: [tableColumn],
-        body: tableRows,
-        startY: 20,
-      });
-      doc.save(`${selectedLabel}_NeverCommunicated.pdf`);
-    }
+    doc.autoTable(tableColumn, tableRows);
+    doc.save(`${selectedLabel}.pdf`);
   };
 
   const handleExport = (value) => {
@@ -175,7 +188,7 @@ const GetNeverCommunicated = ({ selectedLabel, office }) => {
           id="export-format"
           value={exportFormat}
           onChange={(e) => handleExport(e.target.value)}
-          style={{ height: '30px' }}
+          style={{height:'30px'}}
         >
           <option value="">Export</option>
           <option value="csv">CSV</option>
@@ -185,33 +198,17 @@ const GetNeverCommunicated = ({ selectedLabel, office }) => {
       </div>
 
       {loading ? (
-        <img src={loadingGif} alt="Loading..." style={{ width: '150px', height: '150px', margin: '50px 350px' }} />
+        <img src={loadingGif} alt="Loading..." style={{ width: '150px', height: '150px', margin:'50px 350px' }} />
       ) : (
         <div className="ag-theme-alpine" style={{ height: 400, width: '100%', marginTop: '20px' }}>
-          <AgGridReact
-            rowData={data}
-            columnDefs={columnDefs}
-            onGridReady={onGridReady}
-            pagination={true}
-            paginationPageSize={length}
-            modules={[ClientSideRowModelModule]}
-          />
+          <AgGridReact rowData={data} columnDefs={columnDefs} onGridReady={fetchData} />
         </div>
       )}
 
       <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
-        <span>
-          Page {currentPage} of {totalPages}
-        </span>
-        <span>
-          {start + 1} to {Math.min((currentPage * length), recordsTotal)} of {recordsTotal}
-        </span>
-        <button onClick={handlePreviousPage} disabled={start === 0} style={{ backgroundColor: 'black', color: 'white' }}>
-          Previous
-        </button>
-        <button onClick={handleNextPage} disabled={start + length >= recordsTotal} style={{ backgroundColor: 'black', color: 'white' }}>
-          Next
-        </button>
+        <span>Page {currentPage} of {totalPages}</span>
+        <button onClick={handlePreviousPage} disabled={start === 0} style={{ backgroundColor: 'black', color: 'white' }}>Previous</button>
+        <button onClick={handleNextPage} disabled={start + length >= recordsTotal} style={{ backgroundColor: 'black', color: 'white' }}>Next</button>
       </div>
     </div>
   );

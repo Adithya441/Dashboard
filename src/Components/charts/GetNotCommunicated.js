@@ -1,45 +1,39 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import { ClientSideRowModelModule } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import * as XLSX from 'xlsx'; // Import for Excel
+import jsPDF from 'jspdf'; // Import for PDF
+import 'jspdf-autotable'; // Import for using autotable with jsPDF
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import loadingGif from '../../Assets/img2.gif';
+import loadingGif from '../../Assets/img2.gif'
 
 const GetNotCommunicated = ({ selectedLabel, office }) => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState([]); // Ensure data is an array
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [fromDate, setFromDate] = useState('');
-  const [start, setStart] = useState(0);
-  const [recordsTotal, setRecordsTotal] = useState(0);
-  const [exportFormat, setExportFormat] = useState('');
-  const [gridApi, setGridApi] = useState(null);
-  const [gridColumnApi, setGridColumnApi] = useState(null);
+  const [fromDate, setFromDate] = useState(null);
+  const [start, setStart] = useState(0); // Start index for pagination
+  const [recordsTotal, setRecordsTotal] = useState(0); // Total records count
+  const length = 10; // Number of records per page
+  const [exportFormat, setExportFormat] = useState(''); // Selected export format
 
-  const length = 10;
-
-  useEffect(() => {
+  useEffect(()=>{
     const date = new Date();
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
     const day = String(date.getDate()).padStart(2, '0');
 
-    const todaydate = `${year}${month}${day}`;
+    const todaydate = year + month + day;
     setFromDate(todaydate);
-  }, []);
+})
 
   const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
 
   const fetchData = useCallback(async () => {
-    if (!fromDate) return;
-
     setError(null);
-    setLoading(true);
+    console.log(selectedLabel);
     try {
       const tokenResponse = await fetch(tokenUrl, {
         method: 'POST',
@@ -57,98 +51,126 @@ const GetNotCommunicated = ({ selectedLabel, office }) => {
       const tokenData = await tokenResponse.json();
       const accessToken = tokenData.access_token;
 
+      // Use the updated start parameter for pagination
       const baseUrl = `/api/server3/UHES-0.0.1/WS/ServerpaginationForMeterCommunicationReport?Flag=${selectedLabel}&draw=1&length=${length}&officeid=${office}&start=${start}`;
-      const dataResponse = await fetch(baseUrl, {
-        headers: { 'Authorization': `Bearer ${accessToken}` },
-      });
+        const dataResponse = await fetch(baseUrl, {
+          headers: { 'Authorization': `Bearer ${accessToken}` },
+        });
+        const responseData = await dataResponse.json();
+        setRecordsTotal(responseData.recordsTotal || 0); // Update this key based on your API response
+        setData(responseData.data || []);
 
-      if (!dataResponse.ok) throw new Error('Failed to fetch data');
-      const responseData = await dataResponse.json();
-
-      setRecordsTotal(responseData.recordsTotal || 0);
-      setData(responseData.data || []);
+       // Set data to responseData.data or an empty array
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [fromDate, selectedLabel, office, start, length]);
+  }, [fromDate, start, length]);
 
   useEffect(() => {
-    if (fromDate) {
-      fetchData();
-    }
-  }, [fetchData, fromDate]);
+    fetchData();
+  }, [fetchData]);
 
+  // AG Grid column definitions
   const columnDefs = [
-    { headerName: "METERNO", field: "METERNO", flex: 1, filter: true, sortable: true },
-    { headerName: "MeterLastCommunicated", field: "MeterLastCommunicated", flex: 1, filter: true, sortable: true },
+    { headerName: "METERNO", field: "METERNO", flex: 1, filter: true, sortable: true, valueFormatter: (params) => params.value ? params.value : "N/A" },
+    { headerName: "MeterLastCommunicated", field: "MeterLastCommunicated", flex: 1, filter: true, sortable: true, valueFormatter: (params) => params.value ? params.value : "N/A" },
+    // Add more columns based on your data structure
   ];
 
-  const onGridReady = (params) => {
-    setGridApi(params.api);
-    setGridColumnApi(params.columnApi);
-  };
-
+  // Handler for pagination
   const handleNextPage = () => setStart((prevStart) => prevStart + length);
   const handlePreviousPage = () => setStart((prevStart) => Math.max(prevStart - length, 0));
 
+  // Calculate the current page number
   const currentPage = Math.floor(start / length) + 1;
   const totalPages = Math.ceil(recordsTotal / length);
 
+  // Export function for CSV
   const exportToCSV = () => {
-    if (gridApi) {
-      gridApi.exportDataAsCsv({ fileName: `${selectedLabel}_NotCommunicated.csv` });
-    }
+    const csvData = data.map(row => ({
+      METERNO: row.METERNO,
+      MeterLastCommunicated: row.MeterLastCommunicated,
+      // Add other fields as needed
+    }));
+
+    const csvContent = [
+      Object.keys(csvData[0]).join(','), // Header
+      ...csvData.map(row => Object.values(row).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', 'data.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
+  // Export function for Excel with adjusted column widths
   const exportToExcel = async () => {
-    if (gridApi) {
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Data');
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Data');
+    const headers = Object.keys(data[0] || {});
+    const title = worksheet.addRow([`${selectedLabel}`]); // Replace with your title text
+    title.font = { bold: true, size: 16, color: { argb: 'FFFF00' } }; // Set font color and size
+    title.alignment = { horizontal: 'center' };
+    worksheet.mergeCells('A1', `${String.fromCharCode(64 + headers.length)}1`);
 
-      const headerRow = worksheet.addRow([`${selectedLabel} Not Communicated Meters`]);
-      headerRow.font = { bold: true, size: 16 };
-      worksheet.mergeCells(`A1:${String.fromCharCode(65 + columnDefs.length - 1)}1`);
+    const headerRow = worksheet.addRow(headers);
 
-      const columnHeaders = columnDefs.map(col => col.headerName);
-      worksheet.addRow(columnHeaders);
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FFFFFF' } }; // White font color
+      cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFADD8E6' }, // Black background color
+      };
+  });
 
-      gridApi.forEachNodeAfterFilterAndSort((node) => {
-        const rowData = columnDefs.map(col => node.data[col.field]);
-        worksheet.addRow(rowData);
-      });
+    // Add data rows
+    data.forEach(row => {
+        worksheet.addRow(Object.values(row));
+    });
 
-      columnDefs.forEach((col, index) => {
-        worksheet.getColumn(index + 1).width = 15;
-      });
-
-      const buffer = await workbook.xlsx.writeBuffer();
-      saveAs(new Blob([buffer]), `${selectedLabel}_NotCommunicated.xlsx`);
-    }
+    worksheet.autoFilter = {
+      from: 'A2', // Starting cell of the filter (top-left corner)
+      to: `${String.fromCharCode(64 + headers.length)}2` // Ending cell (top-right corner based on header count)
   };
 
+    // Adjust column widths based on the max length of the column data
+    headers.forEach((header, index) => {
+        const maxLength = Math.max(
+            header.length, // Length of the header
+            ...data.map(row => row[header] ? row[header].toString().length : 0) // Length of the content
+        );
+        worksheet.getColumn(index + 1).width = maxLength + 2; // Adding padding
+    });
+
+    // Generate Excel file and trigger download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, `${selectedLabel}.xlsx`);
+};
+
+  // Export function for PDF
   const exportToPDF = () => {
-    if (gridApi) {
-      const doc = new jsPDF();
-      const tableColumn = columnDefs.map(col => col.headerName);
-      const tableRows = [];
+    const doc = new jsPDF();
+    const tableColumn = ["METERNO", "MeterLastCommunicated"]; // Add more columns based on your data structure
+    const tableRows = [];
 
-      gridApi.forEachNodeAfterFilterAndSort((node) => {
-        const rowData = columnDefs.map(col => node.data[col.field]);
-        tableRows.push(rowData);
-      });
+    data.forEach(row => {
+      tableRows.push([row.METERNO, row.MeterLastCommunicated]);
+      // Add other fields as needed
+    });
 
-      doc.text(`${selectedLabel} Not Communicated Meters`, 14, 15);
-      doc.autoTable({
-        head: [tableColumn],
-        body: tableRows,
-        startY: 20,
-      });
-      doc.save(`${selectedLabel}_NotCommunicated.pdf`);
-    }
+    doc.autoTable(tableColumn, tableRows);
+    doc.save('data.pdf');
   };
 
+  // Handle export format change
   const handleExport = (value) => {
     switch (value) {
       case 'csv':
@@ -167,6 +189,7 @@ const GetNotCommunicated = ({ selectedLabel, office }) => {
 
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px' }}>
+      
       {error && <p style={{ color: 'red' }}>Error: {error}</p>}
 
       <div>
@@ -174,7 +197,7 @@ const GetNotCommunicated = ({ selectedLabel, office }) => {
           id="export-format"
           value={exportFormat}
           onChange={(e) => handleExport(e.target.value)}
-          style={{ height: '30px' }}
+          style={{height:'30px'}}
         >
           <option value="">Export</option>
           <option value="csv">CSV</option>
@@ -184,37 +207,22 @@ const GetNotCommunicated = ({ selectedLabel, office }) => {
       </div>
 
       {loading ? (
-        <img src={loadingGif} alt="Loading..." style={{ width: '150px', height: '150px', margin: '50px 350px' }} />
+        <img src={loadingGif} alt="Loading..." style={{ width: '150px', height: '150px', margin:'50px 350px' }} />
       ) : (
         <div className="ag-theme-alpine" style={{ height: 400, width: '100%', marginTop: '20px' }}>
-          <AgGridReact
-            rowData={data}
-            columnDefs={columnDefs}
-            onGridReady={onGridReady}
-            pagination={true}
-            paginationPageSize={length}
-            modules={[ClientSideRowModelModule]}
-          />
+          <AgGridReact rowData={data} columnDefs={columnDefs} onGridReady={fetchData} />
         </div>
       )}
 
-      <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
-        <span>
+      <div style={{ marginTop: '20px', display:'flex', justifyContent:'space-between' }}>
+        <span style={{ marginLeft: '10px' }}>
           Page {currentPage} of {totalPages}
         </span>
-        <span>
-          {start + 1} to {Math.min((currentPage * length), recordsTotal)} of {recordsTotal}
-        </span>
-        <button onClick={handlePreviousPage} disabled={start === 0} style={{ backgroundColor: 'black', color: 'white' }}>
-          Previous
-        </button>
-        <button onClick={handleNextPage} disabled={start + length >= recordsTotal} style={{ backgroundColor: 'black', color: 'white' }}>
-          Next
-        </button>
+        <button onClick={handlePreviousPage} disabled={start === 0} style={{backgroundColor:'black', color:'white'}}>Previous</button>
+        <button onClick={handleNextPage} disabled={start + length >= recordsTotal} style={{backgroundColor:'black', color:'white'}}>Next</button>
       </div>
     </div>
   );
 };
 
 export default GetNotCommunicated;
-
