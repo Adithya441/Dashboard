@@ -11,14 +11,14 @@ import {
 } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
 import Dashboard from "./Components/Dashboard/Dashboard_main/Dashboard";
-import DataAvailability from "./Components/charts/DataAvailability";
+import DataAvailabilitys from "./Components/charts/DataAvailabilitys";
 import MeterDetails from "./Components/Meter_Details/MeterDetails/MeterDetail";
 import Logo from "../src/Assets/images/logo.png";
 import Logo1 from "../src/Assets/images/img5.png";
 import Reconnectreload from "./Components/Meter_Details/ReconnectScreen/ReconnectReload";
 import GroupOnDemandControlreload from "./Components/Meter_Details/GroupOnDemandControl/GroupOnDemandControlReload";
-import CommunicationStatistics from "./Components/Dashboard/Communication Statistics/CommunicationStatistics";
-import "./Layout.css";
+import CommunicationStatistics from "./Components/Dashboard/Communication Statistics/CommunicationStatisticsreload";
+import "./Layout.css"; 
 import TransactionLogcontrol from "./Components/Others/TransactionLogcontrol";
 import Alarms from "./Components/Others/Alarms";
 
@@ -28,7 +28,7 @@ const { SubMenu } = Menu;
 
 const componentsMap = {
   dashboard: Dashboard,
-  DataAvailability: DataAvailability,
+  DataAvailability: DataAvailabilitys,
   meterdetails: MeterDetails,
   GrouponDemand: GroupOnDemandControlreload,
   Reconnect: Reconnectreload,

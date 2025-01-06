@@ -39,7 +39,7 @@ const renameKeys = (data, keyMap) => {
     });
 };
 
-const CommunicationStatistics = () => {
+const CommunicationStatisticsmain = () => {
 
     const [office, setOffice] = useState("3459274e-f20f-4df8-a960-b10c5c228d3e");
     const data = [{
@@ -599,4 +599,4 @@ const CommunicationStatistics = () => {
     );
 };
 
-export default CommunicationStatistics;
+export default CommunicationStatisticsmain;
