@@ -21,7 +21,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: calc(100% - 52px);
+    height: calc(100% - 40px);
     font-size: 16px;
     color: #666;
 }

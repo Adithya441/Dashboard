@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
-import { Layout, Menu, Tabs, Button, Input } from "antd";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { Layout, Menu, Tabs, Button, Input, AutoComplete } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -18,7 +18,7 @@ import Logo1 from "../src/Assets/images/img5.png";
 import Reconnectreload from "./Components/Meter_Details/ReconnectScreen/ReconnectReload";
 import GroupOnDemandControlreload from "./Components/Meter_Details/GroupOnDemandControl/GroupOnDemandControlReload";
 import CommunicationStatistics from "./Components/Dashboard/Communication Statistics/CommunicationStatisticsreload";
-import "./Layout.css"; 
+import "./Layout.css";
 import TransactionLogcontrol from "./Components/Others/TransactionLogcontrol";
 import Alarms from "./Components/Others/Alarms";
 
@@ -37,6 +37,17 @@ const componentsMap = {
   alarms: Alarms,
 };
 
+const menuItems = [
+  { key: "dashboard", title: "Dashboard" },
+  { key: "Communicationstatistics", title: "Communication Statistics" },
+  { key: "DataAvailability", title: "Data Availability 30 days" },
+  { key: "meterdetails", title: "Meter Details" },
+  { key: "GrouponDemand", title: "Group OnDemand Control" },
+  { key: "Reconnect", title: "Reconnect Screen" },
+  { key: "transactionlog", title: "Transaction Log" },
+  { key: "alarms", title: "Alarms" },
+];
+
 const Hello = () => {
   const navigate = useNavigate();
 
@@ -50,6 +61,8 @@ const Hello = () => {
   const [tabs, setTabs] = useState([{ key: "dashboard", title: "Dashboard" }]);
   const username = sessionStorage.getItem("username");
   const [isHovered, setIsHovered] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(""); // State for search term
+  const [filteredItems, setFilteredItems] = useState(menuItems); // State for filtered items
 
   const siderWidth = useMemo(
     () => (sidebarState.collapsed && !sidebarState.hovered ? 60 : 200),
@@ -87,18 +100,41 @@ const Hello = () => {
         return filteredTabs;
       });
     },
-    []
+    [activeKey]
   );
 
   const handleOpenChange = useCallback((keys) => {
-    const latestOpenKey = keys.find(
-      (key) => key !== sidebarState.openKey
-    );
+    const latestOpenKey = keys.find((key) => key !== sidebarState.openKey);
     setSidebarState((prev) => ({
       ...prev,
       openKey: latestOpenKey || "",
     }));
   }, [sidebarState.openKey]);
+
+  const handleSearch = useCallback((value) => {
+    setSearchTerm(value);
+    setFilteredItems(
+      menuItems.filter((item) =>
+        item.title.toLowerCase().includes(value.toLowerCase())
+      )
+    );
+  }, []);
+
+  const handleSearchSelect = useCallback(
+    (value) => {
+      const selectedItem = menuItems.find((item) => item.key === value);
+      if (selectedItem) {
+        setActiveKey(selectedItem.key);
+        setTabs((prev) => {
+          if (prev.some((tab) => tab.key === selectedItem.key)) {
+            return prev;
+          }
+          return [...prev, { key: selectedItem.key, title: selectedItem.title }];
+        });
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     const handleResize = () => {
@@ -159,21 +195,18 @@ const Hello = () => {
           onClick={handleMenuClick}
         >
           <SubMenu key="home" icon={<HomeOutlined />} title="Dashboard">
-            <Menu.Item key="dashboard" style={{ paddingLeft: "30px" , fontSize:'11px' }}>Dashboard</Menu.Item>
-            <Menu.Item key="Communicationstatistics" style={{ paddingLeft: "30px" , fontSize:'11px' }}>Communication Statistics</Menu.Item>
-            <Menu.Item key="DataAvailability" style={{ paddingLeft: "30px" , fontSize:'11px' }}>Data Availability 30 days</Menu.Item>
-          </SubMenu>
-          <SubMenu key="profile" icon={<UserOutlined />} title="Configurations">
-            <Menu.Item key="profile-1 " style={{ paddingLeft: "30px" , fontSize:'11px' }}>Configuration 1</Menu.Item>
+            <Menu.Item key="dashboard" style={{ paddingLeft: "30px", fontSize: "11px" }}>Dashboard</Menu.Item>
+            <Menu.Item key="Communicationstatistics" style={{ paddingLeft: "30px", fontSize: "11px" }}>Communication Statistics</Menu.Item>
+            <Menu.Item key="DataAvailability" style={{ paddingLeft: "30px", fontSize: "11px" }}>Data Availability 30 days</Menu.Item>
           </SubMenu>
           <SubMenu key="settings" icon={<SettingOutlined />} title="Meter Details">
-            <Menu.Item key="meterdetails" style={{ paddingLeft: "30px" , fontSize:'11px' }}>Meter Details</Menu.Item>
-            <Menu.Item key="GrouponDemand" style={{ paddingLeft: "30px" , fontSize:'11px' }}>Group OnDemand Control</Menu.Item>
-            <Menu.Item key="Reconnect" style={{ paddingLeft: "30px" , fontSize:'11px' }}>Reconnect Screen</Menu.Item>
+            <Menu.Item key="meterdetails" style={{ paddingLeft: "30px", fontSize: "11px" }}>Meter Details</Menu.Item>
+            <Menu.Item key="GrouponDemand" style={{ paddingLeft: "30px", fontSize: "11px" }}>Group OnDemand Control</Menu.Item>
+            <Menu.Item key="Reconnect" style={{ paddingLeft: "30px", fontSize: "11px" }}>Reconnect Screen</Menu.Item>
           </SubMenu>
           <SubMenu key="Others" icon={<UserOutlined />} title="Others">
-            <Menu.Item key="transactionlog" style={{ paddingLeft: "30px" , fontSize:'11px' }}>Transaction Log</Menu.Item>
-            <Menu.Item key="alarms" style={{ paddingLeft: "30px" , fontSize:'11px' }}>Alarms</Menu.Item>
+            <Menu.Item key="transactionlog" style={{ paddingLeft: "30px", fontSize: "11px" }}>Transaction Log</Menu.Item>
+            <Menu.Item key="alarms" style={{ paddingLeft: "30px", fontSize: "11px" }}>Alarms</Menu.Item>
           </SubMenu>
         </Menu>
       </Sider>
@@ -196,21 +229,29 @@ const Hello = () => {
         >
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <Button type="text" icon={<MenuOutlined />} onClick={toggleFixedExpanded} />
-            <Input placeholder="Search Menu" prefix={<SearchOutlined />} style={{ width: 200 }} />
+            <AutoComplete
+              style={{ width: 200 }}
+              options={filteredItems.map((item) => ({ value: item.key, label: item.title }))}
+              // placeholder="Search menu..."
+              onSearch={handleSearch}
+              onSelect={handleSearchSelect}
+            >
+              <Input prefix={<SearchOutlined />} />
+            </AutoComplete>
           </div>
           <div
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            style={{ position: "relative" }}
+            style={{ position: "relative", cursor: "pointer" }}
           >
             <FontAwesomeIcon icon={faUser} color="orange" />
-            <span style={{ fontWeight: "bolder", color: "orange" }}>{username}</span>
+            <span style={{ marginLeft: "8px", fontWeight: "bolder", color: "orange" }}>{username}</span>
             {isHovered && (
               <div
                 style={{
                   position: "absolute",
                   top: "100%",
-                  left: "0",
+                  right: "0",
                   backgroundColor: "#fff",
                   boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
                   borderRadius: "5px",
@@ -219,46 +260,34 @@ const Hello = () => {
                   padding: "10px",
                 }}
               >
-                <div style={{ cursor: "pointer", fontWeight: "bold", color: "black" }} onClick={() => alert("Profile Clicked")}>
+                <div style={{ cursor: "pointer", fontWeight: "bold", color: "black", padding: "5px" }} onClick={() => alert("Profile Clicked")}>
                   Profile
                 </div>
-                <div style={{ cursor: "pointer", fontWeight: "bold", color: "black" }}>
+                <div style={{ cursor: "pointer", fontWeight: "bold", color: "black", padding: "5px" }}>
                   <Link to="/">Logout</Link>
                 </div>
               </div>
             )}
           </div>
         </Header>
-        <Content
-          style={{
-            marginTop: 55,
-            padding: "10px",
-            background: "white",
-            overflowY: "auto",
-            height: `calc(100vh - 64px)`,
-          }}
-        >
+        <Content style={{ marginTop: "64px", padding: "16px" }}>
           <Tabs
-            activeKey={activeKey}
+            hideAdd
             onChange={handleTabChange}
+            activeKey={activeKey}
             type="editable-card"
-            onEdit={(targetKey, action) => action === "remove" && handleTabClose(targetKey)}
-            style={{
-              position: "sticky",
-              top: 0, // This aligns the tabs to stick just below the header
-              zIndex: 999, // Ensure it's above the content but below the header
-              backgroundColor: "white", // Maintain background consistency
-              padding: "10px 0", // Optional: Add some padding for better visuals
+            onEdit={(targetKey, action) => {
+              if (action === 'remove') {
+                handleTabClose(targetKey);
+              }
             }}
+            style={{ height: "calc(100vh - 112px)" }}
           >
-            {tabs.map(({ key, title }) => {
-              const Component = componentsMap[key];
-              return (
-                <TabPane tab={title} key={key}>
-                  {Component ? <Component /> : <div>Component not found!</div>}
-                </TabPane>
-              );
-            })}
+            {tabs.map((tab) => (
+              <TabPane tab={tab.title} key={tab.key}>
+                {componentsMap[tab.key] ? React.createElement(componentsMap[tab.key]) : null}
+              </TabPane>
+            ))}
           </Tabs>
         </Content>
       </Layout>
