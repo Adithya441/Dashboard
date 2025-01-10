@@ -586,10 +586,10 @@ const CommunicationStatisticsmain = () => {
                 </Col>
                 <Col className="mb-3">
                     <Row>
-                        <Col md='6' className="d-flex">
+                        <Col md='6'>
                             <MeterCommunicationStatus key={office} officeid={office} />
                         </Col>
-                        <Col md='6' className="d-flex">
+                        <Col md='6'>
                             <NonCommunicationMeterStatus key={office} officeid={office} />
                         </Col>
                     </Row>

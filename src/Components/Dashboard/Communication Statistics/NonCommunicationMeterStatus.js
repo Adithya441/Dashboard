@@ -405,7 +405,7 @@ const NonCommunicationMeterStatus = ({ officeid }) => {
             options={chartData.options}
             series={chartData.series}
             type="bar"
-            width="100%"
+            width="90%"
             height="100%"
           />
         </div>
