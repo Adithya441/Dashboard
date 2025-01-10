@@ -12,7 +12,7 @@ const Reconnectreload = () => {
   };
  
   return (
-    <div>
+    <div style={{padding:'5px 5px'}}>
         <div style={{direction:'rtl'}}>
             <FontAwesomeIcon icon={faRotateRight} onClick={reloadComponent} style={{color: "#070b12", cursor: 'pointer',fontSize:'19px', marginLeft:'15px'}} />
         </div>

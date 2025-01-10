@@ -163,7 +163,7 @@ const NonCommunicationMeterStatus = ({ officeid }) => {
   const handleClose = () => setShowModal(false);
   const GetNonCommunicationMeterData = ({ selectedLabel, selectedCategory, office }) => {
     const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [mdtloading, setMDTLoading] = useState(true);
     const [error, setError] = useState(null);
     const [start, setStart] = useState(0); 
     const [fromDate, setFromDate] = useState(null);
@@ -213,7 +213,7 @@ const NonCommunicationMeterStatus = ({ officeid }) => {
       } catch (err) {
         setError(err.message);
       } finally {
-        setLoading(false);
+        setMDTLoading(false);
       }
     };
 
@@ -370,7 +370,7 @@ const NonCommunicationMeterStatus = ({ officeid }) => {
               </select>
             </div>
 
-            {loading ? (
+            {mdtloading ? (
               <img src={loadingGif} alt="Loading..." style={{ width: '150px', height: '150px', margin: '50px 350px' }} />
             ) : (
               <div className="ag-theme-alpine" style={{ height: 400, width: '100%', marginTop: '20px' }}>
@@ -397,15 +397,15 @@ const NonCommunicationMeterStatus = ({ officeid }) => {
     )
   }
   return (
-    <div className="blck19">
+    <div className="blck1">
       <h5 className='chart-name'>Non Communication Meter Status</h5>
       {dataavailable === null ? (
-        <div className="charts19">
+        <div className="charts1">
           <ReactApexChart
             options={chartData.options}
             series={chartData.series}
             type="bar"
-            width="480"
+            width="100%"
             height="100%"
           />
         </div>

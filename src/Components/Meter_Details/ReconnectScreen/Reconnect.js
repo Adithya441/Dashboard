@@ -340,7 +340,7 @@ useEffect(()=>{
   return (
     <div>
       <h1 className="form-title">Reconnect Screen</h1>
-      <Form>
+      <Form style={{paddingLeft:'10px'}}>
         <Row className="mb-3">
           <Col md={4}>
             <Form.Label>Meter Number</Form.Label>
@@ -365,7 +365,7 @@ useEffect(()=>{
         )}
       </Form>
       {meterdata && showtable && (
-        <div className="mt-4">
+        <div className="mt-4" style={{paddingLeft:'10px'}}>
           <table className="table table-bordered">
             <thead>
               <tr className="bg-primary text-dark">
@@ -394,7 +394,7 @@ useEffect(()=>{
         </div>
       )}
       {allmeterdetails && showGrid && (
-        <div>
+        <div style={{paddingLeft:'10px'}}>
         <Row className="mt-4">
         <Col xs={12} md={6} className="d-flex flex-wrap mb-3">
           <Button variant="primary" size="md" className="m-1" onClick={exportExcel}>

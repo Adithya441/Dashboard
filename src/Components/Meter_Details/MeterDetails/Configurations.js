@@ -16,6 +16,7 @@ const Configurations = () => {
   const [rowData, setRowData] = useState([]);
   const [searchKey, setSearchKey] = useState();
   const [valueInput, setValueInput] = useState();
+  const [loadingStatus,setLoadingStatus]=useState('');
   const [colDefs, setColDefs] = useState([
     { field: 'transactionId', filter: true, headerName: 'Transaction ID' },
     { field: 'type', filter: true, headerName: 'Type' },
@@ -104,6 +105,9 @@ const Configurations = () => {
       if (!dataResponse.ok) throw new Error('Failed to fetch data');
       const responseData = await dataResponse.json();
       setRowData(responseData.data);
+      if(((responseData.data).length)==0){
+        setLoadingStatus('Data not found');
+      }
       console.log('grid data :', (responseData.data));
     } catch (err) {
       console.error(err.message);
@@ -309,6 +313,7 @@ const Configurations = () => {
           <button className="btn btn-primary"
             onClick={(e) => {
               e.preventDefault();
+              setLoadingStatus('Loading Data');
               fetchGridData();
             }}>Submit Request</button>
         </div>
@@ -344,7 +349,7 @@ const Configurations = () => {
             ) :
             (
               <div className='mt-4 col-md-10 text-center text-danger mx-auto'>
-                No records found...
+                {loadingStatus}
               </div>
             )
         }

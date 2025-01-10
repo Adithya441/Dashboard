@@ -15,6 +15,7 @@ const PowerConnectDisconnect = ({ meternum }) => {
   const [meterStatus, setMeterStatus] = useState('Disconnected');
   const [rowData, setRowData] = useState();
   const [searchKey, setSearchKey] = useState();
+  const [loadingStatus,setLoadingStatus]=useState('Loading Data');
   const [colDefs] = useState([
     { field: "transactionId", filter: true, headerName: "Transaction Id" },
     { field: "comments", filter: true, headerName: "Comments" },
@@ -53,6 +54,9 @@ const PowerConnectDisconnect = ({ meternum }) => {
       if (!dataResponse.ok) throw new Error('Failed to fetch data');
       const responseData = await dataResponse.json();
       setRowData(responseData.data || []);
+      if((responseData.data).length==0){
+        setLoadingStatus('Data not found');
+      }
       console.log('service data:', (responseData.data));
     } catch (err) {
       console.error(err.message);
@@ -232,7 +236,7 @@ const PowerConnectDisconnect = ({ meternum }) => {
       ) :
         (
           <div className="mx-auto text-center text-danger">
-            Loading Data...
+            {loadingStatus}
           </div>
         )}
     </div>

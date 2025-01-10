@@ -15,7 +15,7 @@ const Alarms = ({ meternum , officeid }) => {
   const [toDate, setToDate] = useState();
   const [searchKey, setSearchKey] = useState();
   const [rowData, setRowData] = useState();
-
+  const [loadingStatus,setLoadingStatus]=useState('');
   const [colDefs] = useState([
     { field: "ALARAMNAME", filter: true, headerName: "Alarm Name", flex: 4 },
     { field: "ALARAMTIME", filter: true, headerName: "Alarm Time", flex: 4 },
@@ -28,8 +28,6 @@ const Alarms = ({ meternum , officeid }) => {
 
   //SERVICE CALLS
   const fetchGridData = async () => {
-    setFromDate('');
-    setToDate('');
     try {
       const tokenResponse = await fetch(tokenUrl, {
         method: 'POST',
@@ -54,6 +52,9 @@ const Alarms = ({ meternum , officeid }) => {
       if (!dataResponse.ok) throw new Error('Failed to fetch data');
       const responseData = await dataResponse.json();
       setRowData(responseData.data);
+      if((responseData.data).length==0){
+        setLoadingStatus('Data not found');
+      }
     } catch (err) {
       console.error(err.message);
     }
@@ -184,6 +185,7 @@ const Alarms = ({ meternum , officeid }) => {
           <button className="btn btn-primary btn-md"
             onClick={(e) => {
               e.preventDefault();
+              setLoadingStatus('Loading Data');
               fetchGridData();
             }}
           >Submit</button>
@@ -216,8 +218,8 @@ const Alarms = ({ meternum , officeid }) => {
           </div>
         ) :
           (
-            <div className="text-danger text-center m-2">
-              No records found...
+            <div className="text-danger text-center m-2 mx-auto">
+              {loadingStatus}
             </div>
           )
       }

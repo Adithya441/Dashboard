@@ -18,6 +18,7 @@ const DynamicOnDemand = ({ meternum, meterty, meterman }) => {
   const [profileName, setProfileName] = useState();
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
+  const [loadingStatus,setLoadingStatus]=useState();
   const [colDefs, setColDefs] = useState([
     { field: "transactionId", filter: true, flex: 2, headerName: "Transaction Id" },
     { field: "requestType", filter: true, flex: 2, headerName: "Request Type" },
@@ -98,7 +99,9 @@ const DynamicOnDemand = ({ meternum, meterty, meterman }) => {
       if (!dataResponse.ok) throw new Error('Failed to fetch data');
       const responseData = await dataResponse.json();
       setRowData(responseData.data);
-      setDataStatus((responseData.message));
+      if((responseData.data).length==0){
+        setLoadingStatus('Data not found');
+      }
       setFromDate('');
       setToDate('');
     } catch (err) {
@@ -268,7 +271,7 @@ const DynamicOnDemand = ({ meternum, meterty, meterman }) => {
             }}>Send Request</button>
         </div>
       </form>
-      {(rowData) && (
+      {(rowData) ? (
         <div className='container-fluid col-12'>
           <div className="d-flex flex-wrap mt-4">
             <div className="d-flex flex-wrap" style={{ marginLeft: '1vw', gap: '1vw' }}>
@@ -291,20 +294,12 @@ const DynamicOnDemand = ({ meternum, meterty, meterman }) => {
             />
           </div>
         </div>
+      ):(
+        <div className='text-danger mx-auto text-center'>
+          {loadingStatus}
+        </div>
       )
       }
-      {
-        (!rowData && dataStatus === "Success") && (
-          <div className='text-danger mx-auto text-center'>
-            No data found...
-          </div>
-        )
-      }
-      {(dataStatus === "Failure") && (
-        <div className='text-danger mx-auto text-center'>
-          Loading Grid...
-        </div>
-      )}
     </div>
   );
 }

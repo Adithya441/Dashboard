@@ -20,7 +20,7 @@ const DataOnDemand = ({ meternum }) => {
   const [rowData, setRowData] = useState([]);
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
-  const [dataStatus, setDataStatus] = useState();
+  const [loadingStatus, setLoadingStatus] = useState('Loading Data');
   const [colDefs] = useState([
     { field: "transactionId", filter: true, flex: 2, headerName: "Transaction ID" },
     { field: "requestType", filter: true, flex: 2, headerName: "Request Type" },
@@ -102,7 +102,9 @@ const DataOnDemand = ({ meternum }) => {
       if (!dataResponse.ok) throw new Error('Failed to fetch data');
       const responseData = await dataResponse.json();
       setRowData(responseData.data);
-      setDataStatus((responseData.status));
+      if((responseData.data).length==0){
+        setLoadingStatus('Data not found');
+      }
     } catch (err) {
       console.error(err.message);
     }
@@ -245,7 +247,7 @@ const DataOnDemand = ({ meternum }) => {
                     type="datetime-local"
                     id="fromDate"
                     value={fromDate}
-                    onChange={(e) => setFromDate(e.target.value)}
+                    onChange={(e) => setFromDate((e.target.value).replace('T',' '))}
                     className='form-control border border-left-3 border-danger'
                     placeholder='From Date'
                   />
@@ -261,7 +263,7 @@ const DataOnDemand = ({ meternum }) => {
                     type="datetime-local"
                     id="toDate"
                     value={toDate}
-                    onChange={(e) => setToDate(e.target.value)}
+                    onChange={(e) => setToDate((e.target.value).replace('T',' '))}
                     className='form-control border border-left-3 border-danger'
                     placeholder='To Date'
                   />
@@ -273,6 +275,7 @@ const DataOnDemand = ({ meternum }) => {
           <button className='btn btn-primary btn-md'
             onClick={(e) => {
               e.preventDefault();
+              setLoadingStatus('Loading Data');
               fetchGridData();
             }}
           >
@@ -280,7 +283,7 @@ const DataOnDemand = ({ meternum }) => {
           </button>
         </div>
       </form>
-      {dataStatus && (
+      {rowData ?(
         <div className='container-fluid col-12'>
           <div className="d-flex flex-wrap mt-4">
             <div className="d-flex flex-wrap" style={{ marginLeft: '1vw', gap: '1vw' }}>
@@ -303,20 +306,12 @@ const DataOnDemand = ({ meternum }) => {
             />
           </div>
         </div>
-      )
-      }
-      {
-        (!rowData && dataStatus) && (
-          <div className='text-danger mx-auto text-center'>
-            Loading Grid...
-          </div>
-        )
-      }
-      {!dataStatus && (
+      ):(
         <div className='text-danger mx-auto text-center'>
-          No data found...
-        </div>
-      )}
+            {loadingStatus}
+          </div>
+      )
+    }
     </div>
   );
 };

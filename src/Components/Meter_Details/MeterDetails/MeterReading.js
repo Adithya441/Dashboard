@@ -18,6 +18,7 @@ const MeterReading = () => {
   const [colDefs, setColDefs] = useState([]);
   const [searchKey, setSearchKey] = useState();
   const [profileOptions, setProfileOptions] = useState([]);
+  const [loadingStatus,setLoadingStatus]=useState('');
 
   const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
   const profileUrl = `/api/server3/UHES-0.0.1/WS/getAllFepCsvHeaderByMeterManfacturerAndMeterType?meterManfacturer=ZEN-TP&meterType=CT`;
@@ -101,6 +102,9 @@ const MeterReading = () => {
         setColDefs(newColDefs);
       }
       setRowData(data);
+      if((data.length)==0){
+        setLoadingStatus('Data not found');
+      }
       console.log('service data:',responseData.data);
     } catch (err) {
       console.error(err.message);
@@ -266,7 +270,7 @@ const MeterReading = () => {
             type="datetime-local"
             id="fromDate"
             value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
+            onChange={(e) => setFromDate((e.target.value).replace('T',' '))}
             className="form-control border border-left-3 border-danger"
             style={{marginRight:'5px',width:'15vw'}}
           />
@@ -278,7 +282,7 @@ const MeterReading = () => {
             type="datetime-local"
             id="toDate"
             value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
+            onChange={(e) => setToDate((e.target.value).replace('T',' '))}
             className="form-control border border-left-3 border-danger"
             style={{marginRight:'5px',width:'15vw'}}
           />
@@ -287,7 +291,11 @@ const MeterReading = () => {
           <button
             type="button"
             className="btn btn-primary"
-            onClick={fetchGridData}
+            onClick={(e)=>{
+              e.preventDefault();
+              setLoadingStatus('Loading Data');
+              fetchGridData();
+            }}
           >
             Submit
           </button>
@@ -318,8 +326,8 @@ const MeterReading = () => {
         </div>
       </div>
       ) : (
-        <div className="mt-4 col-md-10 text-center text-danger">
-          No records found...
+        <div className="mt-4 col-md-10 text-center text-danger mx-auto">
+          {loadingStatus}
         </div>
       )}
     </div>

@@ -18,6 +18,7 @@ const DynamicConfigurations = ({ meternum, meterty, meterman }) => {
   const [operationMode, setOperationMode] = useState("GET");
   const [valueInput, setValueInput] = useState();
   const [searchKey, setSearchKey] = useState();
+  const [loadingStatus,setLoadingStatus]=useState();
   const [colDefs, setColDefs] = useState([
     { field: 'transactionId', filter: true, headerName: "Transaction ID" },
     { field: 'type', filter: true, headerName: "Type" },
@@ -358,7 +359,7 @@ const DynamicConfigurations = ({ meternum, meterty, meterman }) => {
           </div>
         ) : (
           <div className="mt-4 col-md-10 text-center text-danger mx-auto">
-            No records found...
+            {loadingStatus}
           </div>
         )}
       </div>
