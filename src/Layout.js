@@ -21,6 +21,9 @@ import CommunicationStatistics from "./Components/Dashboard/Communication Statis
 import "./Layout.css";
 import TransactionLogcontrol from "./Components/Others/TransactionLogcontrol";
 import Alarms from "./Components/Others/Alarms";
+import AlarmMaster from "./Components/Configurations/AlarmMaster";
+import EventMaster from "./Components/Configurations/EventMaster";
+import EventMapping from "./Components/Configurations/EventMapping";
 
 const { Header, Sider, Content } = Layout;
 const { TabPane } = Tabs;
@@ -35,6 +38,9 @@ const componentsMap = {
   Communicationstatistics: CommunicationStatistics,
   transactionlog: TransactionLogcontrol,
   alarms: Alarms,
+  alarmmaster: AlarmMaster,
+  eventmaster: EventMaster,
+  eventmapping: EventMapping
 };
 
 const menuItems = [
@@ -46,6 +52,9 @@ const menuItems = [
   { key: "Reconnect", title: "Reconnect Screen" },
   { key: "transactionlog", title: "Transaction Log" },
   { key: "alarms", title: "Alarms" },
+  { key: "alarmmaster", title: "Alarm Master" },
+  { key: "eventmaster", title: "Event Master" },
+  { key: "eventmapping", title: "Event Mapping" },
 ];
 
 const Hello = () => {
@@ -199,6 +208,11 @@ const Hello = () => {
             <Menu.Item key="Communicationstatistics" style={{ paddingLeft: "30px", fontSize: "11px" }}>Communication Statistics</Menu.Item>
             <Menu.Item key="DataAvailability" style={{ paddingLeft: "30px", fontSize: "11px" }}>Data Availability 30 days</Menu.Item>
           </SubMenu>
+          <SubMenu key="configurations" icon={<UserOutlined />} title="Configurations">
+            <Menu.Item key="alarmmaster" style={{ paddingLeft: "30px", fontSize: "11px" }}>Alarm Master</Menu.Item>
+            <Menu.Item key="eventmaster" style={{ paddingLeft: "30px", fontSize: "11px" }}>Event Master</Menu.Item>
+            <Menu.Item key="eventmapping" style={{ paddingLeft: "30px", fontSize: "11px" }}>Event Mapping</Menu.Item>
+          </SubMenu>
           <SubMenu key="settings" icon={<SettingOutlined />} title="Meter Details">
             <Menu.Item key="meterdetails" style={{ paddingLeft: "30px", fontSize: "11px" }}>Meter Details</Menu.Item>
             <Menu.Item key="GrouponDemand" style={{ paddingLeft: "30px", fontSize: "11px" }}>Group OnDemand Control</Menu.Item>
@@ -232,11 +246,29 @@ const Hello = () => {
             <AutoComplete
               style={{ width: 200 }}
               options={filteredItems.map((item) => ({ value: item.key, label: item.title }))}
-              // placeholder="Search menu..."
               onSearch={handleSearch}
               onSelect={handleSearchSelect}
             >
-              <Input prefix={<SearchOutlined />} />
+              <Input
+                prefix={<SearchOutlined />}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && searchTerm.length >= 4) {
+                    const matchedItem = menuItems.find((item) =>
+                      item.title.toLowerCase().includes(searchTerm.toLowerCase())
+                    );
+
+                    if (matchedItem) {
+                      setActiveKey(matchedItem.key);
+                      setTabs((prev) => {
+                        if (prev.some((tab) => tab.key === matchedItem.key)) {
+                          return prev;
+                        }
+                        return [...prev, { key: matchedItem.key, title: matchedItem.title }];
+                      });
+                    }
+                  }
+                }}
+              />
             </AutoComplete>
           </div>
           <div
