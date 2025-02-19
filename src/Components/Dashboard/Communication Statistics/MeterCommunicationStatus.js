@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import ReactApexChart from 'react-apexcharts';
+import ReactECharts from 'echarts-for-react';
 import './CommunicationStatistics.css';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -9,8 +9,8 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import loadingGif from '../../../Assets/img2.gif'
-
+import loadingGif from '../../../Assets/img2.gif';
+import './CommunicationStatistics.css'
 
 const MeterCommunicationStatus = ({ officeid }) => {
   const [chartData, setChartData] = useState(null);
@@ -19,9 +19,11 @@ const MeterCommunicationStatus = ({ officeid }) => {
   const [selectedData, setSelectedData] = useState(null);
   const [categorys, setCategory] = useState(null);
   const [selectlabel, setSelectlabel] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
   const baseUrl = `/api/server3/UHES-0.0.1/WS/getmeterCommunicationStatusForWeek?officeid=${officeid}`;
+  
   const fetchData = async () => {
     try {
       const tokenResponse = await fetch(tokenUrl, {
@@ -51,10 +53,9 @@ const MeterCommunicationStatus = ({ officeid }) => {
       const responseData = await dataResponse.json();
 
       if (!responseData.yData) {
-        setLoading(false)
-        return <p>No Data available</p>
-      }
-      else {
+        setLoading(false);
+        return <p>No Data available</p>;
+      } else {
         const labels = responseData.xData || [];
         const communicatedData = responseData.yData[0]?.data || [];
         const notCommunicatedData = responseData.yData[1]?.data || [];
@@ -66,81 +67,9 @@ const MeterCommunicationStatus = ({ officeid }) => {
           return [parseFloat(commPercent), parseFloat(notCommPercent)];
         });
         setChartData({
-          options: {
-            chart: {
-              type: 'bar',
-              stacked: true,
-              stackType: '100%',
-              offsetX:35,
-              offsetY:-20,
-              toolbar: {
-                show: true,
-                offsetY:-20,
-                offsetX:25,
-                tools: {
-                  download: true,
-                },
-                export: {
-                  csv: {
-                    filename: `Meter Communication Status`,
-                  },
-                  svg: {
-                    filename: `Meter Communication Status`,
-                  },
-                  png: {
-                    filename: `Meter Communication Status`,
-                  },
-                },
-              },
-
-              events: {
-                dataPointSelection: (event, chartContext, config) => {
-                  const { dataPointIndex, seriesIndex } = config;
-                  const category = labels[dataPointIndex];
-                  const value = percentageData[dataPointIndex][seriesIndex];
-                  const label = seriesIndex === 0 ? 'Meter Communicated' : 'Meter Not Communicated';
-                  setCategory(category);
-                  setSelectlabel(label);
-                  setSelectedData({ category, value, label });
-                  setShowModal(true);
-                  console.log(`onclick area var values:
-                  cat:${category},val:${value},label:${label}`);
-                },
-              },
-            },
-            plotOptions: {
-              bar: {
-                horizontal: true,
-              },
-            },
-            xaxis: {
-              categories: labels,
-            },
-            yaxis: {
-              max: 100,
-            },
-            colors: ['rgb(35, 240, 12)', 'rgb(28, 148, 142)'],
-            tooltip: {
-              y: {
-                formatter: (val) => `${val}%`,
-              },
-            },
-            legend: {
-              position: 'top',
-              offsetY:20,
-              horizontalAlign: 'center',
-            },
-          },
-          series: [
-            {
-              name: 'Meter Communicated',
-              data: percentageData.map((d) => d[0]),
-            },
-            {
-              name: 'Meter Not Communicated',
-              data: percentageData.map((d) => d[1]),
-            },
-          ],
+          xAxisData: labels,
+          communicatedData: percentageData.map((d) => d[0]),
+          notCommunicatedData: percentageData.map((d) => d[1]),
         });
 
         setLoading(false);
@@ -159,6 +88,76 @@ const MeterCommunicationStatus = ({ officeid }) => {
 
   if (loading) return <p>Loading...</p>;
   if (!chartData) return <h5 style={{ marginTop: '160px', marginLeft: '100px' }}>No data available.</h5>;
+
+  const getOption = () => ({
+    title: {
+      text: 'Meter Communication Status',
+      left: 'center',
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow',
+      },
+    },
+    legend: {
+      data: ['Meter Communicated', 'Meter Not Communicated'],
+      top: '10%',
+      left: 'center',
+    },
+    grid: {
+      left: '3%',  // Increase left margin to avoid label truncation
+      right: '5%',
+      bottom: '0%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'value',
+      max: 100,
+    },
+    yAxis: {
+      type: 'category',
+      data: chartData.xAxisData, // Here we set the categories as y-axis labels
+    },
+    series: [
+      {
+        name: 'Meter Communicated',
+        type: 'bar',
+        stack: 'stack1',
+        data: chartData.communicatedData,
+        itemStyle: {
+          color: 'rgb(35, 240, 12)',
+        },
+        label: {
+          show: true,
+          position: 'inside',
+          formatter: '{c}', // Displays percentage on bars
+          color: '#fff', // Makes text visible inside bars
+        },
+      },
+      {
+        name: 'Meter Not Communicated',
+        type: 'bar',
+        stack: 'stack1',
+        data: chartData.notCommunicatedData,
+        itemStyle: {
+          color: 'rgb(28, 148, 142)',
+        },
+        label: {
+          show: true,
+          position: 'inside',
+          formatter: '{c}', // Displays percentage on bars
+          color: '#fff', // Makes text visible inside bars
+        },
+      },
+    ],
+  });
+  const handleBarClick = (params) => {
+    const { seriesName, name } = params;
+    setSelectlabel(seriesName);  // Set selected label (Meter Communicated or Meter Not Communicated)
+    setSelectedCategory(name);  // Set the selected category (the label on the x-axis)
+    setShowModal(true);  // Open the modal
+  };
 
   const handleClose = () => setShowModal(false);
   const GetMeterCommunicatedData = ({ selectedLabel, selectedCategory, office }) => {
@@ -409,21 +408,19 @@ const MeterCommunicationStatus = ({ officeid }) => {
       
     );
   }
+  
+
   return (
-    <div className="blck">
-      <h5 className='chart-name'>Meter Communication Status</h5>
-      <div className="charts">
-        <ReactApexChart
-          options={chartData.options}
-          series={chartData.series}
-          type="bar"
-          width="90%"
-          height="100%"
-        />
-      </div>
+    <div className='blck19'>
+      <ReactECharts option={getOption()} 
+      style={{width:'100%', height:'calc(100% - 40px)'}}
+      onEvents={{
+          'click': handleBarClick,  // Trigger handleBarClick when bar is clicked
+        }}
+      />
 
       {showModal && (
-        <GetMeterCommunicatedData selectedLabel={selectlabel} selectedCategory={categorys} office={officeid} />
+        <GetMeterCommunicatedData selectedLabel={selectlabel} selectedCategory={selectedCategory} office={officeid} />
       )}
     </div>
   );

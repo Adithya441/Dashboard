@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import ReactApexChart from 'react-apexcharts';
+import ReactECharts from 'echarts-for-react'; // Apache ECharts wrapper for React
 import { Modal, Button } from 'react-bootstrap';
 import GetLoadSwitch from './GetLoadSwitch';
-import './LoadSwitch.css'
+import './LoadSwitch.css';
 
-const LoadSwitchStatus = ({officeid}) => {
+const LoadSwitchStatus = ({ officeid }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedData, setSelectedData] = useState(null);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
   const [dataavailable, setDataAvailable] = useState(null);
   const [selectlabel, setSelectLabel] = useState(null);
   const [chartData, setChartData] = useState(null);
@@ -30,42 +30,42 @@ const LoadSwitchStatus = ({officeid}) => {
           client_secret: 'secret',
         }),
       });
-  
+
       if (!tokenResponse.ok) {
         return { error: 'No Data Available' };
       }
-  
+
       const tokenData = await tokenResponse.json();
       const accessToken = tokenData.access_token;
-  
+
       const dataResponse = await fetch(baseUrl, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         },
       });
-  
+
       if (!dataResponse.ok) {
         return { error: 'No Data Available' };
       }
-  
-      const responseBody = await dataResponse.text(); 
+
+      const responseBody = await dataResponse.text();
       if (!responseBody) {
         return { error: 'No Data Available' };
       }
-  
+
       const responseData = JSON.parse(responseBody);
-  
+
       if (!responseData || !responseData.ydata1 || !responseData.xData) {
         return { error: 'No Data Available' };
       }
-  
+
       const total = responseData.ydata1.slice(0, 2).reduce((acc, curr) => acc + curr, 0);
       const series = responseData.ydata1.slice(0, 2);
       const labels = responseData.xData.slice(0, 2);
-  
+
       return { data: { total, series, labels } };
     } catch (err) {
-      console.error("Error fetching data: ", err.message); 
+      console.error("Error fetching data: ", err.message);
       return { error: 'No Data Available' };
     }
   };
@@ -76,7 +76,7 @@ const LoadSwitchStatus = ({officeid}) => {
     const loadData = async () => {
       setLoading(true);
       const result = await fetchData();
-      
+
       if (!mounted) return;
 
       if (result.error) {
@@ -96,6 +96,46 @@ const LoadSwitchStatus = ({officeid}) => {
     };
   }, [officeid]);
 
+  const getChartOptions = () => {
+    return {
+      tooltip: {
+        trigger: 'item',
+        formatter: '{a} <br/>{b}: {c} ({d}%)',
+      },
+      legend: {
+        orient: 'vertical',
+        left: 'left',
+      },
+      series: [
+        {
+          name: 'Load Switch Status',
+          type: 'pie',
+          radius: ['50%', '70%'],
+          avoidLabelOverlap: false,
+          data: chartData?.labels?.map((label, index) => ({
+            value: chartData?.series[index],
+            name: label,
+          })),
+          label: {
+            show: true,
+            formatter: '{b}: {c} ({d}%)', // Display value and percentage on the donut
+          },
+          itemStyle: {
+            normal: {
+              borderColor: '#fff',
+              borderWidth: 2,
+            },
+          },
+        },
+      ],
+    };
+  };
+  const onChartClick = (params) => {
+    console.log("Chart clicked:", params);
+    setSelectLabel(params.name); // Update selected label
+    setShowModal(true); // Open modal
+  }
+
   return (
     <div className='blck5'>
       <h5 className='chart-name'>Load Switch Status</h5>
@@ -105,87 +145,12 @@ const LoadSwitchStatus = ({officeid}) => {
         <div className="no-data-available">{dataavailable}</div>
       ) : chartData ? (
         <div className="charts5">
-          <ReactApexChart
-            options={{
-              chart: {
-                type: 'donut',
-                toolbar: {
-                  show: false, 
-                  tools: {
-                      download: true, 
-                      export: {
-                        csv: {
-                            filename: `Load Switch`,
-                        },
-                        svg: {
-                            filename: `Load Switch`
-                        },
-                        png: {
-                            filename: `Load Switch`
-                        }
-                    },
-                  },
-                },
-                events: {
-                  dataPointSelection: (event, chartContext, config) => {
-                    const selectedLabel = chartData.labels[config.dataPointIndex];
-                    const selectedValue = chartData.series[config.dataPointIndex];
-                    const percentage = ((selectedValue / chartData.total) * 100).toFixed(2);
-                    setSelectedData({ label: selectedLabel, value: selectedValue, percentage });
-                    setShowModal(true);
-                    setSelectLabel(selectedLabel);
-                  },
-                },
-              },
-              labels: chartData.labels,
-              colors: ['#68B984', '#DE6E56', '#619ED6'],
-              plotOptions: {
-                pie: {
-                  donut: {
-                    labels: {
-                      show: true,
-                      total: {
-                        show: true,
-                        label: 'Total',
-                        formatter: () => chartData.total.toString(),
-                      },
-                    },
-                  },
-                },
-              },
-              dataLabels: {
-                enabled: true,
-                formatter: function (val, opts) {
-                  const value = opts.w.globals.seriesTotals[opts.seriesIndex];
-                  return ((value / chartData.total) * 100).toFixed(2) + '%';
-                },
-              },
-              tooltip: {
-                y: {
-                  formatter: function (val) {
-                    const percentage = ((val / chartData.total) * 100).toFixed(2);
-                    return `${val} (${percentage}%)`;
-                  },
-                },
-              },
-              legend: {
-                position: 'bottom',
-              },
-              responsive: [
-                {
-                  breakpoint: 480,
-                  options: {
-                    legend: {
-                      position: 'bottom',
-                    },
-                  },
-                },
-              ],
+          <ReactECharts
+            option={getChartOptions()}
+            style={{ width: '100%', height: '100%' }}
+            onEvents={{
+              click: onChartClick, // Attach the event handler
             }}
-            series={chartData.series}
-            type="donut"
-            width="100%"
-            height="100%"
           />
         </div>
       ) : (
@@ -216,8 +181,8 @@ const LoadSwitchStatus = ({officeid}) => {
           </div>
 
           {/* Modal Body */}
-          <div style={{ maxHeight: '70vh',width:'970px', overflowY: 'auto' }}>
-            <GetLoadSwitch selectedLabel={selectlabel} office = {officeid}/>
+          <div style={{ maxHeight: '70vh', width: '970px', overflowY: 'auto' }}>
+            <GetLoadSwitch selectedLabel={selectlabel} office={officeid} />
           </div>
 
           {/* Modal Footer */}
@@ -227,7 +192,7 @@ const LoadSwitchStatus = ({officeid}) => {
             </button>
           </div>
         </div>
-        )}
+      )}
     </div>
   );
 };

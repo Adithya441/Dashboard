@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import ReactApexChart from 'react-apexcharts';
-import './CommunicationStatistics.css';
+import ReactECharts from 'echarts-for-react'; // ECharts for React integration
+import './CommunicationStatistics.css'; // Assuming custom styles for your component
+import loadingGif from '../../../Assets/img2.gif'; // Optional: loading gif for your UI
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -9,30 +10,35 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import loadingGif from '../../../Assets/img2.gif'
 
+// Your main functional component
 const NonCommunicationMeterStatus = ({ officeid }) => {
-  const [chartData, setChartData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [dataavailable, setDataAvailable] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedData, setSelectedData] = useState(null);
-  const [categorys, setCategory] = useState(null);
-  const [selectlabel, setSelectlabel] = useState(null);
+  // States for handling data and UI status
+  const [chartData, setChartData] = useState(null); // Holds chart data
+  const [loading, setLoading] = useState(true); // Loading state
+  const [dataavailable, setDataAvailable] = useState(null); // Data availability state
+  const [selectedData, setSelectedData] = useState(null); // For selected data point
+  const [categorys, setCategory] = useState(null); // Category selection
+  const [selectlabel, setSelectlabel] = useState(null); // Label selection
+  const [showModal, setShowModal] = useState(false); // For modal visibility (if needed)
 
+  // Define color palette for the bars in the chart
   const colorPalette = [
     'rgb(119, 178, 247)',
     'rgb(48, 71, 88)',
     'rgb(91, 112, 130)',
     'rgb(57, 125, 200)',
-    'rgb(45, 133, 234)'
+    'rgb(45, 133, 234)',
   ];
 
+  // API URLs for token generation and fetching data
   const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
   const baseUrl = `/api/server3/UHES-0.0.1/WS/gettingOlderForSevenDays?officeid=${officeid}`;
 
+  // Fetch data function
   const fetchData = async () => {
     try {
+      // Fetch authentication token
       const tokenResponse = await fetch(tokenUrl, {
         method: 'POST',
         headers: {
@@ -47,119 +53,118 @@ const NonCommunicationMeterStatus = ({ officeid }) => {
         }),
       });
 
+      // Check if token response is okay
       if (!tokenResponse.ok) throw new Error('Failed to authenticate');
       const { access_token: accessToken } = await tokenResponse.json();
 
+      // Fetch the actual data
       const dataResponse = await fetch(baseUrl, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
 
+      // Check if data response is okay
       if (!dataResponse.ok) throw new Error('Failed to fetch data');
       const responseData = await dataResponse.json();
 
-      if (
-        !responseData.yData
-      ) {
+      // If there's no data, show an appropriate message
+      if (!responseData.yData) {
         setLoading(false);
-        setDataAvailable("No Data Available");
+        setDataAvailable('No Data Available');
         return;
       }
 
       const labels = responseData.xData;
-      const ranges = responseData.yData.map(item => item.name);
-      const rangeData = responseData.yData.map(item => item.data);
+      const ranges = responseData.yData.map((item) => item.name);
+      const rangeData = responseData.yData.map((item) => item.data);
 
+      // Calculate percentages
       const percentageData = labels.map((_, index) => {
         const total = rangeData.reduce((acc, range) => acc + range[index], 0);
-        return rangeData.map(range => (total ? ((range[index] / total) * 100).toFixed(2) : 0));
+        return rangeData.map((range) => (total ? ((range[index] / total) * 100).toFixed(1) : 0));
       });
 
+      // Map ranges into series
       const series = ranges.map((rangeName, i) => ({
         name: rangeName,
-        data: percentageData.map(data => parseFloat(data[i])),
+        data: percentageData.map((data) => parseFloat(data[i])),
       }));
 
+      // Set chart data options
       setChartData({
-        options: {
-          chart: {
-            type: 'bar',
-            stacked: true,
-            stackType: '100%',
-            offsetX:35,
-            offsetY:-20,
-            toolbar: {
-              show: true,
-              offsetY: -20,
-              offsetX:25,
-              tools: {
-                download: true,
-              },
-              export: {
-                csv: { filename: `Non Communication Meter Status` },
-                svg: { filename: `Non Communication Meter Status` },
-                png: { filename: `Non Communication Meter Status` },
-              },
-            },
-            events: {
-              dataPointSelection: (event, chartContext, config) => {
-                const { dataPointIndex, seriesIndex } = config;
-                const category = labels[dataPointIndex];
-                const value = series[seriesIndex].data[dataPointIndex];
-                const label = series[seriesIndex].name;
-                setCategory(category);
-                setSelectlabel(label);
-                setSelectedData({ category, value, label });
-                setShowModal(true);
-                console.log(`onclick vals:
-                  cat:${category} val:${value} label:${label}`);
-              },
-            },
-          },
-          plotOptions: {
-            bar: {
-              horizontal: true,
-            },
-          },
-          xaxis: {
-            categories: labels,
-          },
-          yaxis: {
-            max: 100,
-          },
-          colors: colorPalette,
-          tooltip: {
-            y: {
-              formatter: (val) => `${val.toFixed(2)}%`,
-            },
-          },
-          legend: {
-            position: 'top',
-            offsetY:20,
-            horizontalAlign: 'center',
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: { type: 'shadow' },
+          formatter: (params) => {
+            let tooltipText = `${params[0].name}<br/>`; // Category Label
+            params.forEach((param) => {
+              tooltipText += `${param.marker} ${param.seriesName}: ${param.value}<br/>`;
+            });
+            return tooltipText;
           },
         },
-        series: series,
+        legend: {
+          orient: 'horizontal',
+          top: 'top', // Position legend
+        },
+        grid: {
+          left: '3%',  // Increase left margin to avoid label truncation
+          right: '5%',
+          bottom: '0%',
+          containLabel: true
+        },
+        yAxis: {
+          type: 'category',
+          data: labels, // X-axis categories (labels)
+        },
+        xAxis: {
+          type: 'value',
+          max: 100, // Y-axis max value as percentage
+        },
+        series: series.map((range) => ({
+          name: range.name,
+          type: 'bar',
+          stack: 'total', // Stacked bars
+          data: range.data,
+          itemStyle: {
+            color: colorPalette[series.indexOf(range)], // Color based on range
+          },
+          label: {
+            show: true,
+            position: 'inside',
+            formatter: '{c}', // Displays percentage on bars
+            color: '#fff', // Makes text visible inside bars
+          },
+        })),
       });
+
+      // Set loading state to false when data is ready
       setLoading(false);
     } catch (err) {
       console.error(err.message);
       setLoading(false);
-      setChartData(null);
+      setChartData(null); // In case of error, clear chart data
     }
   };
 
-
+  // UseEffect to call fetchData on component mount and officeid change
   useEffect(() => {
     setLoading(true);
     fetchData();
   }, [officeid]);
 
-
+  // Handle chart click events
+  const handleChartClick = (params) => {
+    const { name: category, value } = params.data;
+    const label = params.seriesName;
+    setCategory(category);
+    setSelectlabel(label);
+    setSelectedData({ category, value, label });
+    setShowModal(true); // Show modal with selected data
+  };
+  
   if (loading) return <p>Loading...</p>;
-
-
   const handleClose = () => setShowModal(false);
   const GetNonCommunicationMeterData = ({ selectedLabel, selectedCategory, office }) => {
     const [data, setData] = useState([]);
@@ -396,28 +401,31 @@ const NonCommunicationMeterStatus = ({ officeid }) => {
       </div>
     )
   }
-  return (
-    <div className="blck1">
-      <h5 className='chart-name'>Non Communication Meter Status</h5>
-      {dataavailable === null ? (
-        <div className="charts1">
-          <ReactApexChart
-            options={chartData.options}
-            series={chartData.series}
-            type="bar"
-            width="90%"
-            height="100%"
-          />
-        </div>
-      ) : (
-        <div className='NDA'>{dataavailable}</div>
-      )}
 
+  return (
+    <div>
+      {/* Display no data available message if necessary */}
+      {dataavailable && <p>{dataavailable}</p>}
+
+      {/* Render the chart using ECharts for React */}
+      <div className="blck19">
+      {chartData && (
+        <ReactECharts
+          option={chartData} // Pass chart data options
+          style={{ height: 'calc(100% - 40px)', width: '100%' }} // Set chart style
+          onEvents={{
+            click: handleChartClick, // Handle click event on chart
+          }}
+        />
+      )}
+      </div>
       {showModal && (
         <GetNonCommunicationMeterData selectedLabel={selectlabel} selectedCategory={categorys} office={officeid} />
       )}
+
     </div>
   );
 };
 
+// Export the component for use in other parts of the app
 export default NonCommunicationMeterStatus;

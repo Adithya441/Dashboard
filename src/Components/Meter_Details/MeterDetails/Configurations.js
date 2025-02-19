@@ -22,10 +22,18 @@ const Configurations = () => {
     { field: 'type', filter: true, headerName: 'Type' },
     { field: 'jobName', filter: true, headerName: 'Job Name' },
     { field: 'requestFrom', filter: true, headerName: 'Request From' },
-    { field: 'requestTime', filter: true, headerName: 'Request Time' },
-    { field: 'responseTime', filter: true, headerName: 'Response Time' },
+    { field: 'requestTime', filter: true, headerName: 'Request Time', valueFormatter: (params) =>{return  formatDateTime(params.value)||"-" } },
+    { field: 'responseTime', filter: true, headerName: 'Response Time', valueFormatter: (params) =>{return  formatDateTime(params.value)||"-" } },
     { field: 'responseData', filter: true, headerName: 'Response Data' },
-    { field: 'status', filter: true, headerName: 'status' }
+    { field: 'status', filter: true, headerName: 'status',cellRenderer: (params) => {
+      if (!params.value) return "--"; 
+      const div = document.createElement("div");
+      div.innerHTML = params.value;
+      const text = div.textContent || div.innerText; 
+      const boldTag = div.querySelector("b"); 
+      const color = boldTag?.style.color || "black"; 
+      return <span style={{ color, fontWeight: "bold" }}>{text}</span>;
+    } }
   ]);
   const [operationMode, setOperationMode] = useState("GET");
 
@@ -114,6 +122,24 @@ const Configurations = () => {
     }
   };
 
+  const formatDateTime = (timestamp) => {
+    if (!timestamp) return ''; // Handle null or undefined values
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+};
+
+const stripHtml = (html) => {
+  if (!html) return ""; 
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return div.textContent || div.innerText || "";
+};
   const exportCSV = () => {
     const csvData = rowData.map(row => ({
       TransactionID: row.transactionId,
@@ -123,7 +149,7 @@ const Configurations = () => {
       RequestTime: row.requestTime,
       ResponseTime: row.responseTime,
       ResponseData: row.responseData,
-      status: row.status
+      status: stripHtml(row.status)
     }));
 
     const csvContent = [
@@ -160,8 +186,12 @@ const Configurations = () => {
       };
     });
 
-    rowData.forEach(row => {
-      worksheet.addRow(Object.values(row));
+    rowData.forEach((row) => {
+      worksheet.addRow(
+        headers.map((header) =>
+          header === "status" ? stripHtml(row[header]) : row[header]
+        )
+      );
     });
 
     worksheet.autoFilter = {
@@ -174,7 +204,7 @@ const Configurations = () => {
         header.length,
         ...rowData.map(row => row[header] ? row[header].toString().length : 0)
       );
-      worksheet.getColumn(index + 1).width = maxLength + 2;
+      worksheet.getColumn(index + 1).width = maxLength + 10;
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
@@ -188,7 +218,7 @@ const Configurations = () => {
     const tableRows = [];
 
     rowData.forEach(row => {
-      tableRows.push([row.transactionId, row.type, row.jobName, row.requestFrom, row.requestTime, row.responseTime, row.responseData, row.status]);
+      tableRows.push([row.transactionId, row.type, row.jobName, row.requestFrom, row.requestTime, row.responseTime, row.responseData, stripHtml(row.status)]);
     });
 
     doc.autoTable(tableColumn, tableRows);

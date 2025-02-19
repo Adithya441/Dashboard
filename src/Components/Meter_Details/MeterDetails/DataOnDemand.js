@@ -24,10 +24,22 @@ const DataOnDemand = ({ meternum }) => {
   const [colDefs] = useState([
     { field: "transactionId", filter: true, flex: 2, headerName: "Transaction ID" },
     { field: "requestType", filter: true, flex: 2, headerName: "Request Type" },
-    { field: "requestTime", filter: true, flex: 2, headerName: "Request Time" },
+    { field: "requestTime", filter: true, flex: 2, headerName: "Request Time", valueFormatter: (params) =>{return  formatDateTime(params.value)||"-" } },
     { field: "requestFrom", filter: true, flex: 2, headerName: "Request From" },
-    { field: "responseTime", filter: true, flex: 2, headerName: "Response Time" },
-    { field: "responseCode", filter: true, flex: 2, headerName: "Response Code" }
+    { field: "responseTime", filter: true, flex: 2, headerName: "Response Time", valueFormatter: (params) =>{return  formatDateTime(params.value)||"-" } },
+    {
+      field: "responseCode",
+      filter: true,
+      headerName: "Status",
+      cellRenderer: (params) => {
+        if (!params.value) return "--"; 
+        const div = document.createElement("div");
+        div.innerHTML = params.value;
+        const text = div.textContent || div.innerText; 
+        const boldTag = div.querySelector("b"); 
+        const color = boldTag?.style.color || "black"; 
+        return <span style={{ color, fontWeight: "bold" }}>{text}</span>;
+      }}
   ]);
   //SERVICE URLS
   const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
@@ -115,6 +127,18 @@ const DataOnDemand = ({ meternum }) => {
     fetchGridData();
   }, []);
 
+  const formatDateTime = (timestamp) => {
+    if (!timestamp) return ''; // Handle null or undefined values
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+};
+
   const exportCSV = () => {
     const csvData = rowData.map(row => ({
       TransactionID: row.transactionId,
@@ -122,7 +146,7 @@ const DataOnDemand = ({ meternum }) => {
       RequestTime: row.requestTime,
       RequestFrom: row.requestFrom,
       ResponseTime: row.responseTime,
-      ResponseCode: row.responseCode
+      ResponseCode: stripHtml(row.responseCode) 
     }));
 
     const csvContent = [
@@ -141,44 +165,66 @@ const DataOnDemand = ({ meternum }) => {
 
   const exportExcel = async () => {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Data On Demand');
+    const worksheet = workbook.addWorksheet("Data On Demand");
+  
     const headers = Object.keys(rowData[0] || {});
-    const title = worksheet.addRow([`Data On Demand`]);
-    title.font = { bold: true, size: 16, color: { argb: 'FFFF00' } };
-    title.alignment = { horizontal: 'center' };
-    worksheet.mergeCells('A1', `${String.fromCharCode(64 + headers.length)}1`);
-
+  
+    const title = worksheet.addRow(["Data On Demand"]);
+    title.font = { bold: true, size: 16, color: { argb: "FFFF00" } };
+    title.alignment = { horizontal: "center" };
+    worksheet.mergeCells("A1", `${String.fromCharCode(64 + headers.length)}1`);
+  
+    // Add headers
     const headerRow = worksheet.addRow(headers);
-
     headerRow.eachCell((cell) => {
-      cell.font = { bold: true, color: { argb: 'FFFFFF' } };
+      cell.font = { bold: true, color: { argb: "FFFFFF" } };
       cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFADD8E6' },
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFADD8E6" },
       };
     });
-
-    rowData.forEach(row => {
-      worksheet.addRow(Object.values(row));
+  
+    // Add row data
+    rowData.forEach((row) => {
+      worksheet.addRow(
+        headers.map((header) =>
+          header === "responseCode" ? stripHtml(row[header]) : row[header]
+        )
+      );
     });
-
+  
+    // Apply auto-filter
     worksheet.autoFilter = {
-      from: 'A2',
-      to: `${String.fromCharCode(64 + headers.length)}2`
+      from: "A2",
+      to: `${String.fromCharCode(64 + headers.length)}2`,
     };
-
+  
+    // Adjust column widths
     headers.forEach((header, index) => {
       const maxLength = Math.max(
         header.length,
-        ...rowData.map(row => row[header] ? row[header].toString().length : 0)
+        ...rowData.map((row) => stripHtml(row[header])?.length || 0)
       );
       worksheet.getColumn(index + 1).width = maxLength + 2;
     });
-
+  
+    // Generate Excel file
     const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    saveAs(blob, `DataOnDemand.xlsx`);
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    saveAs(blob, "DataOnDemand.xlsx");
+  };
+  
+  
+ 
+  
+  const stripHtml = (html) => {
+    if (!html) return ""; 
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.textContent || div.innerText || "";
   };
 
   const exportPDF = () => {
@@ -187,7 +233,7 @@ const DataOnDemand = ({ meternum }) => {
     const tableRows = [];
 
     rowData.forEach(row => {
-      tableRows.push([row.transactionId, row.requestType, row.requestTime, row.requestFrom, row.responseTime, row.responseCode]);
+      tableRows.push([row.transactionId, row.requestType, row.requestTime, row.requestFrom, row.responseTime, stripHtml(row.responseCode) ]);
     });
 
     doc.autoTable(tableColumn, tableRows);

@@ -77,8 +77,23 @@ const FirmwareUpgrade = () => {
     { field: "Firmware_Version", filter: true, flex: 2, headerName: "Firmware Version" },
     { field: "Request_Time", filter: true, flex: 2, headerName: "Request Time" },
     { field: "Response_Time", filter: true, flex: 2, headerName: "Response Time" },
-    { field: "Request_Code", filter: true, flex: 2, headerName: "Response Code" }
+    { field: "Request_Code", filter: true, flex: 2, headerName: "Response Code" ,cellRenderer: (params) => {
+      if (!params.value) return "--"; 
+      const div = document.createElement("div");
+      div.innerHTML = params.value;
+      const text = div.textContent || div.innerText; 
+      const boldTag = div.querySelector("b"); 
+      const color = boldTag?.style.color || "black"; 
+      return <span style={{ color, fontWeight: "bold" }}>{text}</span>;
+    }}
   ]);
+
+  const stripHtml = (html) => {
+    if (!html) return ""; 
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.textContent || div.innerText || "";
+  };
 
   const exportCSV = () => {
     const csvData = rowData.map(row => ({
@@ -86,7 +101,7 @@ const FirmwareUpgrade = () => {
       FirmwareVersion: row.Firmware_Version,
       RequestTime: row.Request_Time,
       ResponseTime: row.Response_Time,
-      ResponseCode: row.Request_Code
+      ResponseCode: stripHtml(row.Request_Code)
     }));
 
     const csvContent = [
@@ -123,8 +138,12 @@ const FirmwareUpgrade = () => {
       };
     });
 
-    rowData.forEach(row => {
-      worksheet.addRow(Object.values(row));
+    rowData.forEach((row) => {
+      worksheet.addRow(
+        headers.map((header) =>
+          header === "Request_Code" ? stripHtml(row[header]) : row[header]
+        )
+      );
     });
 
     worksheet.autoFilter = {
@@ -137,7 +156,7 @@ const FirmwareUpgrade = () => {
         header.length,
         ...rowData.map(row => row[header] ? row[header].toString().length : 0)
       );
-      worksheet.getColumn(index + 1).width = maxLength + 2;
+      worksheet.getColumn(index + 1).width = maxLength + 6;
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
@@ -151,7 +170,7 @@ const FirmwareUpgrade = () => {
     const tableRows = [];
 
     rowData.forEach(row => {
-      tableRows.push([row.Transaction_ID, row.Firmware_Version, row.Request_Time, row.Response_Time, row.Request_Code]);
+      tableRows.push([row.Transaction_ID, row.Firmware_Version, row.Request_Time, row.Response_Time, stripHtml(row.Request_Code)]);
     });
 
     doc.autoTable(tableColumn, tableRows);

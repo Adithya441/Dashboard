@@ -1,27 +1,113 @@
-.blck{
-    margin-top: 5px;
-    margin-bottom: 5px;
-    border-radius: 12px;
-    background-color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-    height: 48vh;
-}
-.charts{
-    width: 100%;
-    height: calc(100% - 45px);
-}
-.chart-name{
-    font-size: 15px;
-    text-align: center;
+/* Container for the whole component */
+.blck {
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    height: 65vh;
+  }
+  
+  /* Title styling */
+  .chart-name {
+    font-size: 24px;
     font-weight: bold;
-    padding: 10px 0;
-}
-.no-data-available {
+    color: #333;
+    margin-bottom: 15px;
+  }
+  
+  /* Loading or no data message */
+  .no-data-available {
+    text-align: center;
+    font-size: 18px;
+    color: #888;
+    margin-top: 50px;
+  }
+  
+  /* Chart container for ReactECharts */
+  .charts {
+    width: 100%;
+    height: calc(110%);
+  }
+  
+  /* Modal styling for the selected data */
+  #modal-content {
+    max-width: 960px;
+    margin: auto;
+  }
+  
+  /* Modal background and layout */
+  .modal-content {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    padding: 1.5em;
+  }
+  
+  /* Modal close button */
+  .modal-close-button {
+    border: none;
+    background: transparent;
+    font-size: 2rem;
+    color: #333;
+    cursor: pointer;
+  }
+  
+  /* Modal title styling */
+  #modal-title {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    height: calc(100% - 40px);
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+  }
+  
+  /* Scrollable content for modal */
+  .modal-scrollable-content {
+    max-height: 70vh;
+    overflow-y: auto;
+    margin-top: 15px;
+  }
+  
+  /* Modal footer with Close button */
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 15px;
+  }
+  
+  .modal-footer button {
+    padding: 0.5em 1.2em;
     font-size: 16px;
-    color: #666;
-}
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .modal-footer button:hover {
+    background-color: #0056b3;
+  }
+  
+  .modal-footer button:focus {
+    outline: none;
+  }
+  
+  /* Custom scrollbar for modal */
+  .modal-scrollable-content::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .modal-scrollable-content::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 5px;
+  }
+  
+  .modal-scrollable-content::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+  }
+  

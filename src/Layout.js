@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
-import { Layout, Menu, Tabs, Button, Input, AutoComplete } from "antd";
+import { Layout, Menu, Tabs, Button, Input, AutoComplete, Typography  } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -8,11 +8,14 @@ import {
   SearchOutlined,
   SettingOutlined,
   MenuOutlined,
+  AppstoreOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined
 } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
 import Dashboard from "./Components/Dashboard/Dashboard_main/Dashboard";
 import DataAvailabilitys from "./Components/charts/DataAvailabilitys";
-import MeterDetails from "./Components/Meter_Details/MeterDetails/MeterDetail";
+import MeterTabs from "./Components/Meter_Details/MeterDetails/Metertabs";
 import Logo from "../src/Assets/images/logo.png";
 import Logo1 from "../src/Assets/images/img5.png";
 import Reconnectreload from "./Components/Meter_Details/ReconnectScreen/ReconnectReload";
@@ -20,29 +23,65 @@ import GroupOnDemandControlreload from "./Components/Meter_Details/GroupOnDemand
 import CommunicationStatistics from "./Components/Dashboard/Communication Statistics/CommunicationStatisticsreload";
 import "./Layout.css";
 import TransactionLogcontrol from "./Components/Others/TransactionLogcontrol";
-import Alarms from "./Components/Others/Alarms";
-import AlarmMaster from "./Components/Configurations/AlarmMaster";
-import EventMaster from "./Components/Configurations/EventMaster";
+import Alarms from "./Components/Others/Alarms/Alarms";
+import MeterPing from "./Components/Others/MeterPing/MeterPing";
 import EventMapping from "./Components/Configurations/EventMapping";
-
+//import TaskManager from "./Components/Configurations/TaskManager";
+//import ProfileHeaderTabs from "./Components/Configurations/ProfileHeaderTabs";
+import { GridFill } from "react-bootstrap-icons";
+import CommFailureReport from "./Components/Reports/CommFailureReport";
+import CMRITransactionReport from "./Components/Reports/CMRITransactionReport";
+import SimChangeReport from "./Components/Reports/SimChangeReport";
+import AutoMappedMetersReport from "./Components/Reports/AutoMappedMetersReport/AutoMappedMetersReport";
+import ConfigurationReport from "./Components/Reports/ConfigurationReport/ConfigurationReport";
+import DataAvailabilityReport from "./Components/Reports/DataAvailabilityReport/DataAvailabilityReport";
+import DetailedSLAReport from "./Components/Reports/DetailedSLAReport/DetailedSLAReport";
+import RTCDriftReport from "./Components/Reports/RTCDriftReport";
+import SLAReport from "./Components/Reports/SLAReport";
+import Communicationreportreload from "./Components/Reports/CommunicationReportreload";
+import NonCommunicationreportreload from "./Components/Reports/NonCommunicationReportreload";
+import DeviceMasterreload from "./Components/Reports/DeviceMasterreload";
+import TimeSynchronizationreload from "./Components/Reports/TimeSynchronizationreload";
+import Exceptionreportreload from "./Components/Reports/ExceptionReportreload";
+import Connectdisconnectreportreload from "./Components/Reports/Connectdisconnetreportreload";
+import { MaxTabsDialog } from "./Components/Meter_Details/MeterDetails/MeterTabslimit";
+ 
 const { Header, Sider, Content } = Layout;
 const { TabPane } = Tabs;
 const { SubMenu } = Menu;
-
+const { Title } = Typography;
 const componentsMap = {
   dashboard: Dashboard,
   DataAvailability: DataAvailabilitys,
-  meterdetails: MeterDetails,
+  meterdetails: MeterTabs,
   GrouponDemand: GroupOnDemandControlreload,
   Reconnect: Reconnectreload,
   Communicationstatistics: CommunicationStatistics,
   transactionlog: TransactionLogcontrol,
   alarms: Alarms,
-  alarmmaster: AlarmMaster,
-  eventmaster: EventMaster,
-  eventmapping: EventMapping
+  meterping: MeterPing,
+  eventmapping: EventMapping,
+  // taskmanager: TaskManager,
+  // profileheader:ProfileHeaderTabs,
+  configurationreport: ConfigurationReport,
+  slareport: SLAReport,
+  detailedslareport: DetailedSLAReport,
+  dataavailabilityreport: DataAvailabilityReport,
+  automappedmetersreport: AutoMappedMetersReport,
+  rtcdriftreport: RTCDriftReport,
+  commfailurereport: CommFailureReport ,
+  cmritransreport: CMRITransactionReport,
+  simchangereport: SimChangeReport ,
+  communicationreport: Communicationreportreload,
+  noncommunicationreport: NonCommunicationreportreload,
+  devicemaster: DeviceMasterreload,
+  timesynchronization: TimeSynchronizationreload,
+  exceptionreport: Exceptionreportreload,
+  connectdisconnectreport: Connectdisconnectreportreload
+  
+ 
 };
-
+ 
 const menuItems = [
   { key: "dashboard", title: "Dashboard" },
   { key: "Communicationstatistics", title: "Communication Statistics" },
@@ -52,51 +91,48 @@ const menuItems = [
   { key: "Reconnect", title: "Reconnect Screen" },
   { key: "transactionlog", title: "Transaction Log" },
   { key: "alarms", title: "Alarms" },
-  { key: "alarmmaster", title: "Alarm Master" },
-  { key: "eventmaster", title: "Event Master" },
+  { key: "meterping", title: "Meter Ping" },
   { key: "eventmapping", title: "Event Mapping" },
+  // { key: "taskmanager", title: "Task Manager"},
+  // { key:"profileheader",title:"Profile Headers"},
+  { key: "configurationreport", title: "Configuration Report"},
+  { key: "slareport", title: "SLA Report"},
+  { key: "detailedslareport", title: "Detailed SLA Report"},
+  { key: "dataavailabilityreport", title: "Data Availability Report"},
+  { key: "automappedmetersreport", title: "Auto Mapped Meters Report"},
+  { key: "rtcdriftreport", title: "RTC Drift Report"},
+  { key: "commfailurereport", title: "Comm Failure Report"},
+  { key: "cmritransreport", title: "CMRI Transaction Report"},
+  { key: "simchangereport", title: "Sim Change Report"},
+  { key: "communicationreport", title: "Communication Report"},
+  { key: "noncommunicationreport", title: "Non Communication Report"},
+  { key: "devicemaster", title: "Device Master"},
+  { key: "timesynchronization", title: "Time Synchronization"},
+  { key: "exceptionreport", title: "Exception Report"},
+  { key: "connectdisconnectreport", title: "Connect Disconnect Report"}
+  
 ];
 
 const Hello = () => {
+  const [collapsed, setCollapsed] = useState(true);
   const navigate = useNavigate();
-
-  const [sidebarState, setSidebarState] = useState({
-    collapsed: true,
-    hovered: false,
-    fixedExpanded: false,
-    openKey: "",
-  });
   const [activeKey, setActiveKey] = useState("dashboard");
   const [tabs, setTabs] = useState([{ key: "dashboard", title: "Dashboard" }]);
-  const username = sessionStorage.getItem("username");
+  const username = localStorage.getItem("username");
   const [isHovered, setIsHovered] = useState(false);
   const [searchTerm, setSearchTerm] = useState(""); // State for search term
   const [filteredItems, setFilteredItems] = useState(menuItems); // State for filtered items
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const siderWidth = useMemo(
-    () => (sidebarState.collapsed && !sidebarState.hovered ? 60 : 200),
-    [sidebarState.collapsed, sidebarState.hovered]
-  );
-
-  const toggleFixedExpanded = useCallback(() => {
-    setSidebarState((prev) => ({
-      ...prev,
-      fixedExpanded: !prev.fixedExpanded,
-      collapsed: !prev.collapsed,
-    }));
-  }, []);
-
-  const handleSiderHover = useCallback((hovered) => {
-    setSidebarState((prev) => {
-      if (prev.fixedExpanded) return prev;
-      return { ...prev, hovered };
-    });
-  }, []);
-
+  const handleLogout = () => {
+    localStorage.clear(); // Clears local storage
+    navigate("/"); // Redirect to home/login page
+  };
+ 
   const handleTabChange = useCallback((newActiveKey) => {
     setActiveKey(newActiveKey);
   }, []);
-
+ 
   const handleTabClose = useCallback(
     (targetKey) => {
       setTabs((prevTabs) => {
@@ -112,14 +148,6 @@ const Hello = () => {
     [activeKey]
   );
 
-  const handleOpenChange = useCallback((keys) => {
-    const latestOpenKey = keys.find((key) => key !== sidebarState.openKey);
-    setSidebarState((prev) => ({
-      ...prev,
-      openKey: latestOpenKey || "",
-    }));
-  }, [sidebarState.openKey]);
-
   const handleSearch = useCallback((value) => {
     setSearchTerm(value);
     setFilteredItems(
@@ -128,7 +156,7 @@ const Hello = () => {
       )
     );
   }, []);
-
+ 
   const handleSearchSelect = useCallback(
     (value) => {
       const selectedItem = menuItems.find((item) => item.key === value);
@@ -145,95 +173,107 @@ const Hello = () => {
     []
   );
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth <= 768) {
-        setSidebarState((prev) => ({
-          ...prev,
-          collapsed: true,
-          fixedExpanded: false,
-        }));
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   const handleMenuClick = useCallback(({ key }) => {
-    setActiveKey(key);
     setTabs((prev) => {
       if (prev.some((tab) => tab.key === key)) {
+        setActiveKey(key);
         return prev;
       }
+
+      if (prev.length >= 7) {
+        setIsDialogOpen(true); // Show dialog if limit exceeds
+        return prev;
+      }
+
+      setActiveKey(key);
       return [...prev, { key, title: key.charAt(0).toUpperCase() + key.slice(1) }];
     });
   }, []);
 
   return (
-    <Layout
-      style={{ minHeight: "100vh" }}
-      className={sidebarState.collapsed ? "sider-collapsed" : "sider-expanded"}
-    >
+    <Layout style={{ minHeight: "100vh" }}>
+      {/* Sidebar */}
       <Sider
-        collapsed={sidebarState.collapsed && !sidebarState.hovered && !sidebarState.fixedExpanded}
-        onMouseEnter={() => handleSiderHover(true)}
-        onMouseLeave={() => handleSiderHover(false)}
-        width={200}
+        collapsible
+        collapsed={collapsed}
+        onCollapse={(value) => setCollapsed(value)}
+        width={200} // Expanded width
         collapsedWidth={60}
         style={{
           position: "fixed",
           height: "100vh",
           transition: "all 0.3s ease",
-          backgroundColor: "#089bab",
+          backgroundColor: "#293846",
+          overflowY: "auto",
+          overflowX: "hidden",
         }}
       >
-        <div className="logo" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "64px" }}>
-          {sidebarState.collapsed && !sidebarState.hovered ? (
+        <div
+          className="logo"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "64px",
+          }}
+        >
+          {collapsed ? (
             <img src={Logo1} alt="Collapsed Logo" style={{ width: "40px", height: "40px" }} />
           ) : (
             <img src={Logo} alt="Expanded Logo" style={{ width: "120px", height: "40px" }} />
           )}
         </div>
-        <Menu
-          style={{ backgroundColor: "#089bab" }}
-          mode="inline"
-          selectedKeys={[activeKey]}
-          openKeys={[sidebarState.openKey]}
-          onOpenChange={handleOpenChange}
-          onClick={handleMenuClick}
-        >
-          <SubMenu key="home" icon={<HomeOutlined />} title="Dashboard">
-            <Menu.Item key="dashboard" style={{ paddingLeft: "30px", fontSize: "11px" }}>Dashboard</Menu.Item>
-            <Menu.Item key="Communicationstatistics" style={{ paddingLeft: "30px", fontSize: "11px" }}>Communication Statistics</Menu.Item>
-            <Menu.Item key="DataAvailability" style={{ paddingLeft: "30px", fontSize: "11px" }}>Data Availability 30 days</Menu.Item>
+
+        <Menu mode="inline" style={{ backgroundColor: "#293846" }} theme="dark" onClick={handleMenuClick}>
+          <SubMenu key="home" icon={<HomeOutlined />} title="Dashboard" style={{ backgroundColor: "#293846", color: "black" , fontSize: "14px", fontWeight: "700" }}>
+            <Menu.Item key="dashboard" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Dashboard</Menu.Item>
+            <Menu.Item key="Communicationstatistics" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Communication Statistics</Menu.Item>
+            <Menu.Item key="DataAvailability" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Data Availability 30 days</Menu.Item>
           </SubMenu>
-          <SubMenu key="configurations" icon={<UserOutlined />} title="Configurations">
-            <Menu.Item key="alarmmaster" style={{ paddingLeft: "30px", fontSize: "11px" }}>Alarm Master</Menu.Item>
-            <Menu.Item key="eventmaster" style={{ paddingLeft: "30px", fontSize: "11px" }}>Event Master</Menu.Item>
-            <Menu.Item key="eventmapping" style={{ paddingLeft: "30px", fontSize: "11px" }}>Event Mapping</Menu.Item>
+          <SubMenu key="configurations" icon={<UserOutlined />} title="Configurations" style={{ backgroundColor: "#293846", color: "black" , fontSize: "14px", fontWeight: "700" }}>
+            <Menu.Item key="eventmapping" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Event Mapping</Menu.Item>
           </SubMenu>
-          <SubMenu key="settings" icon={<SettingOutlined />} title="Meter Details">
-            <Menu.Item key="meterdetails" style={{ paddingLeft: "30px", fontSize: "11px" }}>Meter Details</Menu.Item>
-            <Menu.Item key="GrouponDemand" style={{ paddingLeft: "30px", fontSize: "11px" }}>Group OnDemand Control</Menu.Item>
-            <Menu.Item key="Reconnect" style={{ paddingLeft: "30px", fontSize: "11px" }}>Reconnect Screen</Menu.Item>
+          <SubMenu key="settings" icon={<SettingOutlined />} title="Meter Details" style={{ backgroundColor: "#293846", color: "black" , fontSize: "14px", fontWeight: "700" }}>
+            <Menu.Item key="meterdetails" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Meter Details</Menu.Item>
+            <Menu.Item key="GrouponDemand" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Group OnDemand Control</Menu.Item>
+            <Menu.Item key="Reconnect" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Reconnect Screen</Menu.Item>
           </SubMenu>
-          <SubMenu key="Others" icon={<UserOutlined />} title="Others">
-            <Menu.Item key="transactionlog" style={{ paddingLeft: "30px", fontSize: "11px" }}>Transaction Log</Menu.Item>
-            <Menu.Item key="alarms" style={{ paddingLeft: "30px", fontSize: "11px" }}>Alarms</Menu.Item>
+          <SubMenu key="Others" icon={<UserOutlined />} title="Others" style={{ backgroundColor: "#293846", color: "black" , fontSize: "14px", fontWeight: "700" }}>
+            <Menu.Item key="transactionlog" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Transaction Log</Menu.Item>
+            <Menu.Item key="alarms" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Alarms</Menu.Item>
+            <Menu.Item key="meterping" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Meter Ping</Menu.Item>
+          </SubMenu>
+          <SubMenu key="Reports" icon={<AppstoreOutlined />} popupClassName="scrollable-popup" title="Reports" style={{ backgroundColor: "#293846", color: "black" , fontSize: "14px", fontWeight: "700" }}>
+            <Menu.Item key="communicationreport" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Communication Report</Menu.Item>
+            <Menu.Item key="noncommunicationreport" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Non Communication Report</Menu.Item>
+            <Menu.Item key="devicemaster" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Device Master</Menu.Item>
+            <Menu.Item key="commfailurereport" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Comm Failure Report</Menu.Item>
+            <Menu.Item key="cmritransreport" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>CMRI Transaction Report</Menu.Item>
+            <Menu.Item key="simchangereport" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Sim Change Report</Menu.Item>
+            <Menu.Item key="rtcdriftreport" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>RTC Drift Report</Menu.Item>
+            <Menu.Item key="configurationreport" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Configuration Report</Menu.Item>
+            <Menu.Item key="dataavailabilityreport" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Data Availability Report</Menu.Item>
+            <Menu.Item key="automappedmetersreport" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Auto Mapped Meters Report</Menu.Item>
+            <Menu.Item key="detailedslareport" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Detailed SLA Report</Menu.Item>
+            <Menu.Item key="timesynchronization" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Time Synchronization</Menu.Item>
+            <Menu.Item key="exceptionreport" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Exception Report</Menu.Item>
+            <Menu.Item key="connectdisconnectreport" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Connect Disconnect Report</Menu.Item>
+            <Menu.Item key="slareport" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>SLA Report</Menu.Item>
           </SubMenu>
         </Menu>
       </Sider>
 
-      <Layout style={{ marginLeft: siderWidth, transition: "margin-left 0.3s ease" }}>
+      {/* Main Layout */}
+      <Layout style={{ marginLeft: collapsed ? 60 : 200, transition: "all 0.3s ease" }}>
+        {/* Header */}
         <Header
           style={{
             position: "fixed",
             top: 0,
-            width: `calc(100% - ${siderWidth}px)`,
             zIndex: 1000,
+            width: `calc(100% - ${collapsed ? 60 : 200}px)`,
             padding: "0 16px",
-            background: "#089bab",
+            background: "#f3f3f4",
             color: "#fff",
             display: "flex",
             alignItems: "center",
@@ -242,9 +282,16 @@ const Hello = () => {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <Button type="text" icon={<MenuOutlined />} onClick={toggleFixedExpanded} />
+          <h4 style={{ margin: 0 , color:"#293846"}}>UHES</h4>
+          <Button
+            type="text"
+            onClick={() => setCollapsed(!collapsed)}
+            style={{ marginLeft: "10px", border:"2px solid #0081c2", borderRadius:"5px" , backgroundColor:"#0081c2", color:"white", width:"30px", height:"26px"}}
+          >
+            {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          </Button>
             <AutoComplete
-              style={{ width: 200 }}
+              style={{ width: 250, marginLeft:'35px' }}
               options={filteredItems.map((item) => ({ value: item.key, label: item.title }))}
               onSearch={handleSearch}
               onSelect={handleSearchSelect}
@@ -256,7 +303,7 @@ const Hello = () => {
                     const matchedItem = menuItems.find((item) =>
                       item.title.toLowerCase().includes(searchTerm.toLowerCase())
                     );
-
+ 
                     if (matchedItem) {
                       setActiveKey(matchedItem.key);
                       setTabs((prev) => {
@@ -272,12 +319,11 @@ const Hello = () => {
             </AutoComplete>
           </div>
           <div
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            onClick={() => setIsHovered((prev)=>!prev)}
             style={{ position: "relative", cursor: "pointer" }}
           >
-            <FontAwesomeIcon icon={faUser} color="orange" />
-            <span style={{ marginLeft: "8px", fontWeight: "bolder", color: "orange" }}>{username}</span>
+            <FontAwesomeIcon icon={faUser} color="#1890ff" />
+            <span style={{ marginLeft: "8px", fontWeight: "bolder", color: "#1890ff" }}>{username}</span>
             {isHovered && (
               <div
                 style={{
@@ -292,17 +338,15 @@ const Hello = () => {
                   padding: "10px",
                 }}
               >
-                <div style={{ cursor: "pointer", fontWeight: "bold", color: "black", padding: "5px" }} onClick={() => alert("Profile Clicked")}>
-                  Profile
-                </div>
-                <div style={{ cursor: "pointer", fontWeight: "bold", color: "black", padding: "5px" }}>
-                  <Link to="/">Logout</Link>
-                </div>
+                <span style={{ cursor: "pointer", fontWeight: "bold", color: "black" }} onClick={() => alert("Profile Clicked")}>Profile</span><br/>
+                <span style={{ cursor: "pointer", fontWeight: "bold", color: "black" }} onClick={handleLogout}>Logout</span>
               </div>
             )}
           </div>
         </Header>
-        <Content style={{ marginTop: "64px", padding: "16px" }}>
+
+        {/* Content */}
+        <Content style={{ marginTop: "52px", padding: "6px" }}>
           <Tabs
             hideAdd
             onChange={handleTabChange}
@@ -313,7 +357,6 @@ const Hello = () => {
                 handleTabClose(targetKey);
               }
             }}
-            style={{ height: "calc(100vh - 112px)" }}
           >
             {tabs.map((tab) => (
               <TabPane tab={tab.title} key={tab.key}>
@@ -321,10 +364,21 @@ const Hello = () => {
               </TabPane>
             ))}
           </Tabs>
+          <MaxTabsDialog
+            open={isDialogOpen}
+            onClose={() => {
+              setIsDialogOpen(false);
+
+              // Ensure an active tab is set after closing the dialog
+              setActiveKey((prevActiveKey) => {
+                return tabs.length > 0 ? prevActiveKey || tabs[tabs.length - 1].key : null;
+              });
+            }}
+          />
+          
         </Content>
       </Layout>
     </Layout>
   );
 };
-
 export default Hello;

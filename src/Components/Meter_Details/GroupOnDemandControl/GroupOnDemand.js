@@ -279,8 +279,7 @@ function GroupOnDemandControl() {
 
 
   return (
-    <div>
-      <h1 className="form-title">Group On Demand Screen</h1>
+    <div style={{margin:'10px'}}>
       <Form onSubmit={handleSubmit}>
         <Row className="mb-3">
           <Col md={4}>
@@ -335,6 +334,7 @@ function GroupOnDemandControl() {
             type="submit"
             className="submitbutt"
             variant="primary"
+            style={{backgroundColor:'#5cb0e7', width:'130px'}}
           >
             Send Request
             </Button>
@@ -342,13 +342,13 @@ function GroupOnDemandControl() {
       </Form>
       <Row className="mb-3 justify content-start">
         <Col xs="auto" className="px-1">
-          <button onClick={exportExcel} className="export-button">Excel</button>
+          <button onClick={exportExcel} className="export-button" style={{backgroundColor:'#5cb0e7'}}>Excel</button>
         </Col>
         <Col xs="auto" className="px-1">
-          <button onClick={exportPDF} className="export-button">Pdf</button>
+          <button onClick={exportPDF} className="export-button" style={{backgroundColor:'#5cb0e7'}}>Pdf</button>
         </Col>
         <Col xs="auto" className="px-1">
-          <button onClick={exportCSV} className="export-button">Csv</button>
+          <button onClick={exportCSV} className="export-button" style={{backgroundColor:'#5cb0e7'}}>Csv</button>
         </Col>
       </Row>
       {meterData && (

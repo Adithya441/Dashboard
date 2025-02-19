@@ -5,17 +5,17 @@ import {
   Box,
   Typography,
 } from "@mui/material";
-import MeterInformation from "./MeterInformation";
-import DataOnDemand from "./DataOnDemand";
-import MeterReading from "./MeterReading";
-import Configurations from "./Configurations";
-import FirmwareUpgrade from "./FirmwareUpgrade";
-import SecuritySetup from "./SecuritySetup";
-import Alarms from "./Alarms";
-import TransactionLog from "./TransactionLog";
-import DynamicConfigurations from "./DynamicConfigurations";
-import DynamicOnDemand from "./DynamicOnDemand";
-import PowerConnectDisconnect from "./PowerConnectDisconnect";
+import MeterInformatioreload from "./MeterInformatioreload";
+import DataOnDemandreload from "./DataOnDemandreload";
+import MeterReadingreload from "./MeterReadingreload";
+import Configurationsreload from "./Configurationsreload";
+import FirmwareUpgradereload from "./FirmwareUpgradereload";
+import SecuritySetupreload from "./SecuritySetupreload";
+import Alarmsreload from "./Alarmsreload";
+import TransactionLogreload from "./TransactionLogreload";
+import DynamicConfigurationsreload from "./DynamicConfigurationsreload";
+import DynamicOnDemandreload from "./DynamicOnDemandreload";
+import PowerConnectDisconnectreload from "./PowerConnectDisconnectreload";
 
 const TabPanel = ({ children, value, index }) => {
   return (
@@ -46,7 +46,7 @@ const DetailPage = ({ data, office }) => {
     {
       label: "Meter Information",
       content: (
-        <MeterInformation
+        <MeterInformatioreload
           meternum={data.meterno}
           meterInter={data.meterInterface}
         />
@@ -54,12 +54,12 @@ const DetailPage = ({ data, office }) => {
     },
     {
       label: "Data On Demand",
-      content: <DataOnDemand meternum={data.meterno} />,
+      content: <DataOnDemandreload meternum={data.meterno} />,
     },
     {
       label: "Meter Reading",
       content: (
-        <MeterReading
+        <MeterReadingreload
           meternum={data.meterno}
           meterman={data.metermake}
           meterty={data.metertype}
@@ -68,28 +68,28 @@ const DetailPage = ({ data, office }) => {
     },
     {
       label: "Configurations",
-      content: <Configurations meternum={data.meterno} />,
+      content: <Configurationsreload meternum={data.meterno} />,
     },
     {
       label: "Firmware Upgrade",
-      content: <FirmwareUpgrade meternum={data.meterno} />,
+      content: <FirmwareUpgradereload meternum={data.meterno} />,
     },
     {
       label: "Security Setup",
-      content: <SecuritySetup meternum={data.meterno} />,
+      content: <SecuritySetupreload meternum={data.meterno} />,
     },
     {
       label: "Alarms",
-      content: <Alarms meternum={data.meterno} officeid={office} />,
+      content: <Alarmsreload meternum={data.meterno} officeid={office} />,
     },
     {
       label: "Transaction Log",
-      content: <TransactionLog meternum={data.meterno} officeid={office} />,
+      content: <TransactionLogreload meternum={data.meterno} officeid={office} />,
     },
     {
       label: "Dynamic Configurations",
       content: (
-        <DynamicConfigurations
+        <DynamicConfigurationsreload
           meternum={data.meterno}
           meterty={data.metertype}
           meterman={data.metermake}
@@ -99,7 +99,7 @@ const DetailPage = ({ data, office }) => {
     {
       label: "Dynamic OnDemand",
       content: (
-        <DynamicOnDemand
+        <DynamicOnDemandreload
           meternum={data.meterno}
           meterty={data.metertype}
           meterman={data.metermake}
@@ -108,7 +108,7 @@ const DetailPage = ({ data, office }) => {
     },
     {
       label: "Power Connect Disconnect",
-      content: <PowerConnectDisconnect meternum={data.meterno} />,
+      content: <PowerConnectDisconnectreload meternum={data.meterno} />,
     },
   ];
 

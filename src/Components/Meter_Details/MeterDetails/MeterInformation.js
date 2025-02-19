@@ -58,31 +58,71 @@ const MeterInformation = ({meternum, meterInter}) => {
   }
 
   return (
-    <div >
-      {meterData && Object.keys(meterData).length > 0 ? (
-        <div className="container-fluid col-lg-8 mx-auto row border border-2 text-dark p-3 m-1" style={{ zIndex: 40, boxShadow: "4px grey" }}>
-          <div className="d-flex justify-content-between align-content-center col-lg-5 col-xs-10 flex-column">
-            <ul className="list-unstyled p-3 ml-3 mt-2">
-              <li>Meter No:{meterData.meterid}</li>
-              <li>Meter Manufacture:{meterData.metermanufacture}</li>
-              <li>Meter Interface:{meterData.meterinterface}</li>
-              <li>Firmware Version:{meterData.firmwareversion}</li>
-              <li>Meter Installed Date:{meterData.mtrInstallationDate}</li>
-            </ul>
-          </div>
-          <div className="d-flex justify-content-between align-content-center col-lg-5 col-xs-10 flex-column">
-            <ul className="list-unstyled p-3 ml-3 mt-2">
-              <li>Relay Status:NA</li>
-              <li>Meter Type:{meterData.metertype}</li>
-              <li>Meter Category:{meterData.metercategory}</li>
-              <li>Meter Last Communicated:{meterData.mtrLastComm}</li>
-            </ul>
-          </div>
-        </div>
-      ) : (
-        <p>No data found for this meter.</p>
-      )}
+    <div>
+  {meterData && Object.keys(meterData).length > 0 ? (
+    <div className="container-fluid col-lg-10 mx-auto row border border-2 text-dark p-3 m-1 shadow-box"
+      style={{
+        zIndex: 40,
+        boxShadow: "4px 4px 10px rgba(0,0,0,0.2)", 
+        width: "80vw", 
+        backgroundColor: "#fff",
+        borderRadius: "8px"
+      }}>
+      
+      {/* Left Column */}
+      <div className="d-flex justify-content-between align-content-center col-lg-6 col-xs-10 flex-column">
+        <ul className="list-unstyled p-3 ml-3 mt-2">
+          <li className="d-flex justify-content-between">
+            <span className="fw-bold">Meter No:</span> 
+            <span style={{color:"red"}}>{meterData.meterid || "-"}</span>
+          </li>
+          <li className="d-flex justify-content-between">
+            <span className="fw-bold">Meter Manufacture:</span> 
+            <span>{meterData.metermanufacture || "NA"}</span>
+          </li>
+          <li className="d-flex justify-content-between">
+            <span className="fw-bold">Meter Interface:</span> 
+            <span>{meterData.meterinterface || "-"}</span>
+          </li>
+          <li className="d-flex justify-content-between">
+            <span className="fw-bold">Firmware Version:</span> 
+            <span>{meterData.firmwareversion || "NA"}</span>
+          </li>
+          <li className="d-flex justify-content-between">
+            <span className="fw-bold">Meter Installed Date:</span> 
+            <span>{meterData.mtrInstallationDate || "-"}</span>
+          </li>
+        </ul>
+      </div>
+
+      {/* Right Column */}
+      <div className="d-flex justify-content-between align-content-center col-lg-6 col-xs-10 flex-column">
+        <ul className="list-unstyled p-3 ml-3 mt-2">
+          <li className="d-flex justify-content-between">
+            <span className="fw-bold">Relay Status:</span> 
+            <span>NA</span>
+          </li>
+          <li className="d-flex justify-content-between">
+            <span className="fw-bold">Meter Type:</span> 
+            <span>{meterData.metertype || "-"}</span>
+          </li>
+          <li className="d-flex justify-content-between">
+            <span className="fw-bold">Meter Category:</span> 
+            <span>{meterData.metercategory || "NA"}</span>
+          </li>
+          <li className="d-flex justify-content-between">
+            <span className="fw-bold">Meter Last Communicated:</span> 
+            <span>{meterData.mtrLastComm || "-"}</span>
+          </li>
+        </ul>
+      </div>
+
     </div>
+  ) : (
+    <p>No data found for this meter.</p>
+  )}
+</div>
+
   );
 }
 

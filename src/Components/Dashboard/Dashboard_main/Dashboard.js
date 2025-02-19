@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, Fragment } from 'react';
 import Index from './index';
 import { TfiReload } from "react-icons/tfi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload, faRotateRight } from "@fortawesome/free-solid-svg-icons";
 import { faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import {  Row } from 'react-bootstrap'
 import downloadPDF from '../../Downloads/PDF';
+import '../../Reports/styless.css';
 
 const Dashboard = () => {
   const [key, setKey] = useState(0);
@@ -14,13 +16,34 @@ const Dashboard = () => {
   };
 
   return (
-    <div style={{padding:'5px 5px'}}>
-        <div style={{direction:'rtl'}}>
-            <FontAwesomeIcon icon={faRotateRight} onClick={reloadComponent} style={{color: "#070b12", cursor: 'pointer',fontSize:'19px', marginLeft:'15px'}} />
-            <FontAwesomeIcon icon={faDownload} onClick={downloadPDF} style={{color: "#03ab8f",cursor: "pointer", fontSize: "20px", marginTop:'8px'}} />
-        </div>
+    <Fragment>
+      <Row>
+          <div 
+            style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              width: 'calc(100% - 40px)', 
+              maxWidth: '100%', 
+              padding: '10px',
+              boxSizing: 'border-box',
+              marginLeft: '12px'
+            }} 
+            className="form-title"
+          >
+            <h5 style={{ margin: 0 }}>Home Dashboard</h5>
+            <div>
+            <FontAwesomeIcon icon={faDownload} onClick={downloadPDF} style={{color: "white",cursor: "pointer", fontSize: "20px", marginTop:'8px', marginRight:'15px'}} />
+            <FontAwesomeIcon 
+              icon={faRotateRight} 
+              onClick={reloadComponent} 
+              style={{ color: "white", cursor: 'pointer', fontSize: '19px', marginRight: '15px' }} 
+            />
+            </div>
+          </div>
+        </Row>
         <Index key={key} />
-    </div>
+    </Fragment>
   );
 };
 

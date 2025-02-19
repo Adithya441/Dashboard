@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
+import {Modal,Button} from "react-bootstrap";
 import { AgGridReact } from 'ag-grid-react';
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import { ClientSideRowModelModule } from 'ag-grid-community';
-
+import loadingGif from '../../../Assets/img2.gif';
 import * as ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import { FaCheckCircle } from "react-icons/fa";
 
 const DynamicConfigurations = ({ meternum, meterty, meterman }) => {
   const [configType, setConfigType] = useState();
@@ -16,18 +18,38 @@ const DynamicConfigurations = ({ meternum, meterty, meterman }) => {
   const [meterData, setMeterData] = useState();
   const [rowData, setRowData] = useState([]);
   const [operationMode, setOperationMode] = useState("GET");
-  const [valueInput, setValueInput] = useState();
+  const [valueInput, setValueInput] = useState("");
   const [searchKey, setSearchKey] = useState();
-  const [loadingStatus,setLoadingStatus]=useState();
+  const[show,setShow]=useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const[dynamicConfigurations,setdynamicConfigurations]=useState([]);
+  const[loading,setLoading] = useState(false);
+  const [transactionId, setTransactionId] = useState("");
   const [colDefs, setColDefs] = useState([
-    { field: 'transactionId', filter: true, headerName: "Transaction ID" },
-    { field: 'type', filter: true, headerName: "Type" },
-    { field: 'requestTime', filter: true, headerName: "Request Time" },
-    { field: 'responseFrom', filter: true, headerName: "Request From" },
-    { field: 'response', filter: true, headerName: "Response" },
-    { field: 'responseTime', filter: true, headerName: "Response Time" },
-    { field: 'responseCode', filter: true, headerName: "Status" }
+    { field: 'transactionId', filter: true, headerName: "Transaction ID",valueFormatter:(params)=>{return params.value||"-"}},
+    { field: 'type', filter: true, headerName: "Type",valueFormatter:(params)=>{return params.value||"-"} },
+    { field: 'requestTime', filter: true, headerName: "Request Time", valueFormatter: (params) =>{return  formatDateTime(params.value)||"-" }},
+    { field: 'responseFrom', filter: true, headerName: "Request From" ,valueFormatter:(params)=>{return params.value||"-"}},
+    { field: 'response', filter: true, headerName: "Response" ,valueFormatter:(params)=>{return params.value||"-"}},
+    { field: 'responseTime', filter: true, headerName: "Response Time", valueFormatter: (params) => {return formatDateTime(params.value)||"-" }},
+    {
+      field: "responseCode",
+      filter: true,
+      headerName: "Status",
+      cellRenderer: (params) => {
+        if (!params.value) return "--"; 
+        const div = document.createElement("div");
+        div.innerHTML = params.value;
+        const text = div.textContent || div.innerText; 
+        const boldTag = div.querySelector("b"); 
+        const color = boldTag?.style.color || "black"; 
+        return <span style={{ color, fontWeight: "bold" }}>{text}</span>;
+      }
+    }   
   ]);
+
+
+  const handleShow = () => setShow(true);
 
   //SERVICE URLS
   const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
@@ -42,6 +64,7 @@ const DynamicConfigurations = ({ meternum, meterty, meterman }) => {
     if (valueInput) params.append("value", valueInput);
     return `/api/server3/UHES-0.0.1/WS/getAllMeterStatusJobDetailsBasedOnMeterNo?${params.toString()}`;
   };
+  console.log(valueInput);
   //SERVICE CALLS
   const fetchConfigOptions = async () => {
     try {
@@ -77,7 +100,7 @@ const DynamicConfigurations = ({ meternum, meterty, meterman }) => {
   useEffect(() => {
     fetchConfigOptions();
   }, [configType, operationMode]);
-
+  
   const fetchGridData = async () => {
     try {
       const tokenResponse = await fetch(tokenUrl, {
@@ -108,35 +131,124 @@ const DynamicConfigurations = ({ meternum, meterty, meterman }) => {
     }
   };
 
-  const exportCSV = () => {
-    const csvData = rowData.map(row => ({
+  useEffect (()=>{
+    fetchGridData()
+  },[])
+
+  const actcalgetsetUrl="/api/server3/UHES-0.0.1/WS/DynamicConfigrationRequestWithDLMS";
+  const fetchgetsetCalendars = async () => {
+    setLoading(true);
+    try {
+      const tokenResponse = await fetch(tokenUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'password',
+          username: 'Admin',
+          password: 'Admin@123',
+          client_id: 'fooClientId',
+          client_secret: 'secret',
+        }),
+      });
+  
+      if (!tokenResponse.ok) throw new Error("Failed to authenticate");
+      const tokenData = await tokenResponse.json();
+      const accessToken = tokenData.access_token;
+      const requestBody = {
+        commandType: editConfig,  
+        meterno: meternum,       
+        method: operationMode,   
+        userid: "Jahnavi",        
+        value: valueInput,        
+      };
+      console.log("Sending Request:", requestBody);
+      const response = await fetch(actcalgetsetUrl, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+          "Content-Type": "application/json", 
+        },
+        body: JSON.stringify(requestBody), 
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch profile headers");
+      }
+      const responseData = await response.json();
+      console.log("Fetched Data:", responseData.data);
+      const extractedTransactionId = responseData.data[0].transactionId;
+      console.log(extractedTransactionId);
+      setTransactionId(extractedTransactionId);
+      setdynamicConfigurations(responseData.data);
+      await fetchGridData();
+    } catch (error) {
+      console.error("Error fetching activity calendars:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+
+ 
+
+  const formatDateTime = (timestamp) => {
+    if (!timestamp) return ''; // Handle null or undefined values
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+};
+
+const stripHtml = (html) => {
+  if (!html) return ""; 
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return div.textContent || div.innerText || "";
+};
+
+const exportCSV = () => {
+  const csvData = rowData.map(row => ({
       TransactionID: row.transactionId,
       Type: row.type,
-      RequestTime: row.requestTime,
+      RequestTime: formatForExcel(row.requestTime), // Fix applied here
       RequestFrom: row.responseFrom,
       Response: row.response,
-      ResponseTime: row.responseTime,
-      Status: row.responseCode
-    }));
+      ResponseTime: formatForExcel(row.responseTime), // Fix applied here
+      Status: stripHtml(row.responseCode)
+  }));
 
-    const csvContent = [
-      Object.keys(csvData[0]).join(','),
+  const csvContent = [
+      Object.keys(csvData[0]).join(','), 
       ...csvData.map(row => Object.values(row).join(','))
-    ].join('\n');
+  ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute('download', 'DynamicConfiguration.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', 'DynamicConfiguration.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
-  const exportExcel = async () => {
+
+const formatForExcel = (dateString) => {
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ` +
+         `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+};
+
+
+const exportExcel = async () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Dynamic Configuration');
-    const headers = Object.keys(rowData[0] || {});
+
+    const headers = ['Transaction ID','Type','Request Time','Response From','Response','Response Time','Status'];
     const title = worksheet.addRow(['Dynamic Configuration']);
     title.font = { bold: true, size: 16, color: { argb: 'FFFF00' } };
     title.alignment = { horizontal: 'center' };
@@ -145,59 +257,76 @@ const DynamicConfigurations = ({ meternum, meterty, meterman }) => {
     const headerRow = worksheet.addRow(headers);
 
     headerRow.eachCell((cell) => {
-      cell.font = { bold: true, color: { argb: 'FFFFFF' } };
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFADD8E6' },
-      };
+        cell.font = { bold: true, color: { argb: 'FFFFFF' } };
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFADD8E6' },
+        };
     });
 
     rowData.forEach(row => {
-      worksheet.addRow(Object.values(row));
+        worksheet.addRow([
+            row.transactionId,
+            row.type,
+            formatDateTime(row.requestTime),
+            row.responseFrom,
+            row.response,
+            formatDateTime(row.responseTime),
+            stripHtml(row.responseCode)
+        ]);
     });
 
     worksheet.autoFilter = {
-      from: 'A2',
-      to: `${String.fromCharCode(64 + headers.length)}2`
+        from: 'A2',
+        to: `${String.fromCharCode(64 + headers.length)}2`
     };
 
     headers.forEach((header, index) => {
-      const maxLength = Math.max(
-        header.length,
-        ...rowData.map(row => row[header] ? row[header].toString().length : 0)
-      );
-      worksheet.getColumn(index + 1).width = maxLength + 2;
+        const maxLength = Math.max(
+            header.length,
+            ...rowData.map(row => row[header] ? row[header].toString().length : 0)
+        );
+        worksheet.getColumn(index + 1).width = maxLength + 10;
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     saveAs(blob, `DynamicConfiguration.xlsx`);
-  };
+};
 
-  const exportPDF = () => {
+const exportPDF = () => {
     const doc = new jsPDF();
     const tableColumn = ["Transaction ID", "Type", "Request Time", "Request From", "Response", "Response Time", "Status"];
     const tableRows = [];
 
     rowData.forEach(row => {
-      tableRows.push([row.transactionId, row.type, row.requestTime, row.responseFrom, row.response, row.responseTime, row.responseCode]);
+        tableRows.push([
+            row.transactionId,
+            row.type,
+            formatDateTime(row.requestTime),
+            row.responseFrom,
+            row.response,
+            formatDateTime(row.responseTime),
+            stripHtml(row.responseCode)
+        ]);
     });
 
     doc.autoTable(tableColumn, tableRows);
     doc.save('DynamicConfiguration.pdf');
-  };
+};
 
-  const copyData = () => {
+const copyData = () => {
     const textData = rowData
-      .map(row =>
-        `${row.transactionId}\t${row.type}\t${row.requestTime}\t${row.responseFrom}\t${row.response}\t${row.responseTime}\t${row.responseCode}`
-      )
-      .join("\n");
+        .map(row =>
+            `${row.transactionId}\t${row.type}\t${formatDateTime(row.requestTime)}\t${row.responseFrom}\t${row.response}\t${formatDateTime(row.responseTime)}\t${stripHtml(row.responseCode)}`
+        )
+        .join("\n");
+
     navigator.clipboard.writeText(textData)
-      .then(() => alert("Data copied to clipboard!"))
-      .catch((error) => alert("Failed to copy data: " + error));
-  };
+        .then(() => alert("Data copied to clipboard!"))
+        .catch((error) => alert("Failed to copy data: " + error));
+};
 
   const searchData = (e) => {
     const searchValue = e.target.value;
@@ -213,6 +342,13 @@ const DynamicConfigurations = ({ meternum, meterty, meterman }) => {
       setRowData(filteredData);
     }
   };
+
+  const handleClose = () => {
+    console.log("Closing modal");
+    setShowModal(false);
+  };
+
+
   return (
     <div className="container-fluid col-12">
       <form className="col-12">
@@ -317,7 +453,8 @@ const DynamicConfigurations = ({ meternum, meterty, meterman }) => {
             className="btn btn-primary"
             onClick={(e) => {
               e.preventDefault();
-              fetchGridData();
+              fetchgetsetCalendars();
+              setShowModal(true);
             }}
           >
             Submit Request
@@ -352,16 +489,37 @@ const DynamicConfigurations = ({ meternum, meterty, meterman }) => {
                 rowData={rowData}
                 columnDefs={colDefs}
                 pagination={true}
-                paginationPageSize={5}
+                paginationPageSize={10}
+                paginationPageSizeSelector={[10,20,30,40,50]}
                 modules={[ClientSideRowModelModule]}
-              />
+                overlayLoadingTemplate={`<div style="display: flex; justify-content: center; align-items: center; height: 100%; background-color: rgba(255, 255, 255, 0.8);">
+            <img src="${loadingGif}" alt="Loading..." style="width: 50px; height: 50px;" /></div>`} overlayNoRowsTemplate={'<span class="ag-overlay-no-rows-center">No rows to display</span>'}
+            onGridReady={(params) => { if (loading) {params.api.showLoadingOverlay();} else {params.api.hideOverlay();}}}
+            />
             </div>
           </div>
         ) : (
           <div className="mt-4 col-md-10 text-center text-danger mx-auto">
-            {loadingStatus}
+            {loading}
           </div>
         )}
+        <Modal show={showModal} onHide={() =>setShowModal(false)}>
+      <Modal.Header style={{ display: "flex", justifyContent: "center", alignItems: "center"}}>
+      <Modal.Title style={{ textAlign: "center" }}>
+        <FaCheckCircle style={{ color: "green", fontSize: "3rem" }} />
+      </Modal.Title>
+    </Modal.Header>
+    <Modal.Body className="text-center">
+    <p style={{ fontWeight: 'bold', fontSize: '20px', color: 'black' }}>
+      Request Sent Successfully With : {transactionId}
+    </p>
+  </Modal.Body>
+      <Modal.Footer style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <Button variant="primary"style={{ textAlign: "center" }} onClick={handleClose}>
+        OK
+      </Button>
+    </Modal.Footer>
+      </Modal>
       </div>
     </div>
   );

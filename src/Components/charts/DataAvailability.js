@@ -607,7 +607,6 @@ const transformedData = renameKeys(data, keyMap);
                 style={{
                   height: "25px",
                   textAlign: "start",
-                  border: "1px solid #ccc",
                   fontSize:'12px'
                 }}
               >
@@ -797,7 +796,6 @@ const DataAvailability = () => {
 
   return (
     <div>
-      <h3 style={{ color: '#007bff', fontSize: '14px'  }}>Data Availability Profiles</h3>
       <ProfileForm onProfileSelect={handleProfileSelect} offices={handleOfficename} />
       <StackedBarChart profile={selectedProfile} onDateClick={handleDateClick} officeid={office} />
       {modal && selectedDate && (

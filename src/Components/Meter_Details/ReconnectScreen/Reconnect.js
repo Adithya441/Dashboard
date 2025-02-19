@@ -339,7 +339,6 @@ useEffect(()=>{
 },[transactionId])
   return (
     <div>
-      <h1 className="form-title">Reconnect Screen</h1>
       <Form style={{paddingLeft:'10px'}}>
         <Row className="mb-3">
           <Col md={4}>
@@ -355,6 +354,7 @@ useEffect(()=>{
             <div className="text-center mt-3">
           <Button
             type="submit"
+            style={{ backgroundColor: '#5cb0e7' }}
             className="submitbutt"
             variant="primary"
             onClick={handleSubmit}
@@ -386,7 +386,7 @@ useEffect(()=>{
           </table>
           <center>
             <div className="text-center mt-3">
-              <Button type="submit" className="submitbutt" variant="primary" onClick={handleConnect}>
+              <Button type="submit" className="submitbutt" variant="primary" style={{ backgroundColor: '#5cb0e7' }} onClick={handleConnect}>
                 Connect
               </Button>
             </div>
@@ -397,13 +397,13 @@ useEffect(()=>{
         <div style={{paddingLeft:'10px'}}>
         <Row className="mt-4">
         <Col xs={12} md={6} className="d-flex flex-wrap mb-3">
-          <Button variant="primary" size="md" className="m-1" onClick={exportExcel}>
+          <Button variant="primary" size="md" className="m-1" style={{backgroundColor:'#5cb0e7'}} onClick={exportExcel}>
             Excel
           </Button>
-          <Button variant="primary" size="md" className="m-1" onClick={exportPDF}>
+          <Button variant="primary" size="md" className="m-1" style={{backgroundColor:'#5cb0e7'}} onClick={exportPDF}>
             PDF
           </Button>
-          <Button variant="primary" size="md" className="m-1" onClick={exportCSV}>
+          <Button variant="primary" size="md" className="m-1" style={{backgroundColor:'#5cb0e7'}} onClick={exportCSV}>
             CSV
           </Button>
         </Col>

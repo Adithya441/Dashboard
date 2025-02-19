@@ -1,206 +1,170 @@
-import React, { useState, useEffect } from 'react';
-import ReactApexChart from 'react-apexcharts';
-import { Modal, Button } from 'react-bootstrap';
-import GetNeverCommunicated from './GetNeverCommunicated';
-import './NeverCommunicatedMeters.css'
+import React, { useState, useEffect } from "react";
+import ReactECharts from "echarts-for-react";
+import GetNeverCommunicated from "./GetNeverCommunicated";
+import "./NeverCommunicatedMeters.css";
 
 const NeverCommunicatedMeters = ({ officeid }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedData, setSelectedData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [dataavailable, setDataAvailable] = useState(null);
-  const [chartData, setChartData] = useState([]);
-  const [selectlabel, setSelectLabel] = useState(null);
+  const [dataAvailable, setDataAvailable] = useState(null);
+  const [chartData, setChartData] = useState({ labels: [], series: [] });
+  const [selectLabel, setSelectLabel] = useState(null);
 
-  const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
+  const tokenUrl = "/api/server3/UHES-0.0.1/oauth/token";
   const baseUrl = `/api/server3/UHES-0.0.1/WS/getCommissionedButNotCommunicated?officeid=${officeid}`;
 
   const fetchData = async () => {
+    setLoading(true);
+    setDataAvailable(null);
+
     try {
+      // Fetch token
       const tokenResponse = await fetch(tokenUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({
-          grant_type: 'password',
-          username: 'Admin',
-          password: 'Admin@123',
-          client_id: 'fooClientId',
-          client_secret: 'secret',
+          grant_type: "password",
+          username: "Admin",
+          password: "Admin@123",
+          client_id: "fooClientId",
+          client_secret: "secret",
         }),
       });
 
-      if (!tokenResponse.ok) return <p>No Data available</p>
+      if (!tokenResponse.ok) {
+        throw new Error("Failed to fetch token");
+      }
 
       const { access_token: accessToken } = await tokenResponse.json();
+
+      // Fetch data
       const dataResponse = await fetch(baseUrl, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
 
       if (!dataResponse.ok) {
-        setLoading(false)
-        setDataAvailable("No Data Available");
-        return;
+        throw new Error("Failed to fetch data");
       }
+
       const responseData = await dataResponse.json();
-      if (
-        !responseData || !responseData.yData || !responseData.xData
-      ) {
-        setLoading(false);
-        setDataAvailable("No Data Available");
-        return;
+      console.log("API Response:", responseData);
+
+      // Validate response
+      if (!responseData || !responseData.yData || !responseData.xData || !responseData.yData.length) {
+        throw new Error("Invalid API Response");
       }
 
-      // Directly set xData and yData for chart rendering
-      const labels = responseData.xData;
-      const series = responseData.yData;
+      // Set chart data
+      setChartData({
+        labels: responseData.xData,
+        series: responseData.yData[0]?.data || [],
+      });
 
-      setChartData({ labels, series });
-      setLoading(false);
     } catch (err) {
-      console.error(err.message);
+      console.error("Error fetching data:", err);
+      setDataAvailable("No Data Available");
+    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    setLoading(true);
     fetchData();
   }, [officeid]);
 
+  // Chart Options
   const options = {
-    chart: {
-      type: 'bar',
-      toolbar: {
-        show: false,
-        tools: {
-          download: true,
-        },
-        export: {
-          csv: {
-            filename: `Never Communicated Meters`,
-          },
-          svg: {
-            filename: `Never Communicated Meters`,
-          },
-          png: {
-            filename: `Never Communicated Meters`,
-          },
-        },
-      },
-      events: {
-        dataPointSelection: (event, chartContext, config) => {
-          const selectedLabel = chartData.labels[config.dataPointIndex];
-          const selectedValue = chartData.series[0].data[config.dataPointIndex];
-          setSelectedData({ label: selectedLabel, value: selectedValue });
-          setShowModal(true);
-          setSelectLabel(selectedLabel);
-        },
-      },
+    title: { text: "Never Communicated Meters", left: "center" },
+    tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
+    xAxis: {
+      type: "category",
+      data: chartData.labels.length ? chartData.labels : ["No Data"],
+      axisLabel: { rotate: 30 },
     },
-    xaxis: {
-      categories: chartData.labels,
-    },
-    colors: ['#DE6E56'],
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: '50%',
-        dataLabels: {
-          position: 'top', // Position the labels on top of the bars
-        },
-      },
-    },
-    dataLabels: {
-      enabled: true, // Enable data labels
-      formatter: (val) => `${val}`, // Format the value to display
-      style: {
-        fontSize: '12px', // Customize label font size
-        colors: ['#000'], // Customize label color
-      },
-      offsetY: -15,
-    },
-    tooltip: {
-      y: {
-        formatter: (val) => `${val} Meters`,
-      },
-    },
-    responsive: [
+    yAxis: { type: "value" },
+    series: [
       {
-        breakpoint: 480,
-        options: {
-          legend: {
-            position: 'bottom',
-          },
-        },
+        name: "Meters",
+        type: "bar",
+        data: chartData.series.length ? chartData.series : [0],
+        itemStyle: { color: "#DE6E56" },
+        label: { show: true, position: "top" },
       },
     ],
-    legend: {
-      position: 'bottom',
-    },
+    grid: { left: "10%", right: "10%", bottom: "15%", containLabel: true },
   };
 
-  const handleClose = () => setShowModal(false);
+  const handleChartClick = (params) => {
+    setSelectLabel(params.name);
+    setSelectedData({ label: params.name, value: params.value });
+    setShowModal(true);
+  };
 
   return (
     <div className="blck4">
-      <h5 className='chart-name'>Never Communicated Meters</h5>
       {loading ? (
         <div>Loading...</div>
-      ) : dataavailable ? (
-        <div className="no-data-available">{dataavailable}</div>
-      ) : chartData ? (
+      ) : dataAvailable ? (
+        <div className="no-data-available">{dataAvailable}</div>
+      ) : (
         <div className="charts4">
-          <ReactApexChart
-            options={options}
-            series={chartData.series}
-            type="bar"
-            width="100%"
-            height="100%"
+          <ReactECharts
+            option={options}
+            style={{ width: "100%", height: "90%" }}
+            onEvents={{ click: handleChartClick }}
           />
+
           {showModal && (
             <div
               style={{
-                position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
+                position: "fixed",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
                 zIndex: 1050,
-                backgroundColor: '#fff',
-                width: '1000px',
-                borderRadius: '5px',
-                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.3)',
-                padding: '1em',
-                marginLeft: '125px',
+                backgroundColor: "#fff",
+                width: "1000px",
+                borderRadius: "5px",
+                boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.3)",
+                padding: "1em",
+                marginLeft: "85px",
               }}
             >
-              {/* Modal Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h5 id="contained-modal-title-vcenter">{selectlabel}</h5>
-                <button onClick={handleClose} style={{ background: 'none', border: 'none', fontSize: '1.5rem' }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <h5>{selectLabel}</h5>
+                <button
+                  onClick={() => setShowModal(false)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    fontSize: "1.5rem",
+                  }}
+                >
                   &times;
                 </button>
               </div>
 
-              {/* Modal Body */}
-              <div style={{ maxHeight: '70vh', width: '970px', overflowY: 'auto' }}>
-                <GetNeverCommunicated selectedLabel={selectlabel} office={officeid} />
+              <div style={{ maxHeight: "70vh", width: "970px", overflowY: "auto" }}>
+                <GetNeverCommunicated selectedLabel={selectLabel} office={officeid} />
               </div>
 
-              {/* Modal Footer */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1em' }}>
-                <button onClick={handleClose} style={{ padding: '0.5em 1em', cursor: 'pointer' }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1em" }}>
+                <button onClick={() => setShowModal(false)} style={{ padding: "0.5em 1em", cursor: "pointer" }}>
                   Close
                 </button>
               </div>
             </div>
           )}
         </div>
-      ) : (
-        <div>No Data Available</div>
       )}
     </div>
   );

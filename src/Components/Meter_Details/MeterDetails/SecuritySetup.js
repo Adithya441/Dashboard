@@ -19,8 +19,16 @@ const SecuritySetup = ({ meternum }) => {
     { field: "CommandName", filter: true, headerName: "Command Name" },
     { field: "CommandType", filter: true, headerName: "Command Type" },
     { field: "requestTime", filter: true, headerName: "Request Time" },
-    { field: "responseTime", filter: true, headerName: "Response Time" },
-    { field: "Response", filter: true, headerName: "Response" }
+    { field: "responseTime", filter: true, headerName: "Response Time" ,valueFormatter:(params)=>{return params.value||"--"}},
+    { field: "Response", filter: true, headerName: "Response",cellRenderer: (params) => {
+      if (!params.value) return "--"; 
+      const div = document.createElement("div");
+      div.innerHTML = params.value;
+      const text = div.textContent || div.innerText; 
+      const boldTag = div.querySelector("b"); 
+      const color = boldTag?.style.color || "black"; 
+      return <span style={{ color, fontWeight: "bold" }}>{text}</span>;
+    }} 
   ]);
   //SERVICE URLS 
   const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
@@ -70,6 +78,7 @@ const SecuritySetup = ({ meternum }) => {
     fetchGridData();
   }, []);
 
+  
   const exportCSV = () => {
     const csvData = rowData.map(row => ({
       TransactionID: row.transactionId,
@@ -77,7 +86,7 @@ const SecuritySetup = ({ meternum }) => {
       CommandType: row.CommandType,
       RequestTime: row.requestTime,
       ResponseTime: row.responseTime,
-      Response: row.Response
+      Response: stripHtml(row.Response)
     }));
 
     const csvContent = [
@@ -93,6 +102,14 @@ const SecuritySetup = ({ meternum }) => {
     link.click();
     document.body.removeChild(link);
   };
+
+  const stripHtml = (html) => {
+    if (!html) return ""; 
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.textContent || div.innerText || "";
+  };
+
 
   const exportExcel = async () => {
     const workbook = new ExcelJS.Workbook();
@@ -114,10 +131,13 @@ const SecuritySetup = ({ meternum }) => {
       };
     });
 
-    rowData.forEach(row => {
-      worksheet.addRow(Object.values(row));
+   rowData.forEach((row) => {
+      worksheet.addRow(
+        headers.map((header) =>
+          header === "Response" ? stripHtml(row[header]) : row[header]
+        )
+      );
     });
-
     worksheet.autoFilter = {
       from: 'A2',
       to: `${String.fromCharCode(64 + headers.length)}2`
@@ -142,7 +162,7 @@ const SecuritySetup = ({ meternum }) => {
     const tableRows = [];
 
     rowData.forEach(row => {
-      tableRows.push([row.transactionId, row.CommandName, row.CommandType, row.requestTime, row.responseTime, row.Response]);
+      tableRows.push([row.transactionId, row.CommandName, row.CommandType, row.requestTime, row.responseTime, stripHtml(row.Response)]);
     });
 
     doc.autoTable(tableColumn, tableRows);
@@ -208,7 +228,7 @@ const SecuritySetup = ({ meternum }) => {
             }}>Send Request</button>
         </div>
       </form>
-      {rowData ? (
+      {rowData && (
         <div className="container-fluid col-12">
           <div className="d-flex flex-wrap mt-4">
             <div className="d-flex flex-wrap" style={{ marginLeft: '1vw', gap: '1vw' }}>
@@ -232,12 +252,7 @@ const SecuritySetup = ({ meternum }) => {
             />
           </div>
         </div>
-      ) :
-        (
-          <div className="text-center text-danger mx-auto">
-            No data found...
-          </div>
-        )}
+      )}
     </div>
   );
 }

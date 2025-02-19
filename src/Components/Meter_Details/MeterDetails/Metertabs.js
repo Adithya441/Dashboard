@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import { Tabs } from 'antd'
-import MeterDetails from './MeterDetails'
+import MeterDetails from './MeterDetail'
 import DetailPage from './Detailpage'
 import { MaxTabsDialog } from './MeterTabslimit'
 
@@ -78,4 +78,4 @@ const Metertabs = () => {
   )
 }
 
-export default Metertabs
+export default Metertabs;

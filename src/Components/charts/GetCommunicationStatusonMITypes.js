@@ -18,7 +18,6 @@ const GetCommunicationStatusonMITypes = ({ selectedLabel, selectedCategory, offi
   const [recordsTotal, setRecordsTotal] = useState(0); // Total records count
   const length = 10; // Number of records per page
   const [exportFormat, setExportFormat] = useState(''); 
-  console.log(selectedLabel);// Selected export format
     useEffect(()=>{
         const date = new Date();
         const year = date.getFullYear();
@@ -34,6 +33,7 @@ const GetCommunicationStatusonMITypes = ({ selectedLabel, selectedCategory, offi
   const fetchData = useCallback(async () => {
     setError(null);
     console.log(selectedLabel);
+    console.log(selectedCategory);
     try {
       const tokenResponse = await fetch(tokenUrl, {
         method: 'POST',
@@ -52,8 +52,8 @@ const GetCommunicationStatusonMITypes = ({ selectedLabel, selectedCategory, offi
       const accessToken = tokenData.access_token;
 
       // Use the updated start parameter for pagination
-      if(selectedLabel==='Meter Communicated'){
-      const baseUrl = `/api/server3/UHES-0.0.1/WS/ServerpaginationForCommunicationQueryBasedOnMI?Flag=COMMUNICATED&draw=1&length=${length}&mtrInterface=${selectedCategory}&office=${office}&start=${start}`;
+      if(selectedCategory==='Meter Communicated'){
+      const baseUrl = `/api/server3/UHES-0.0.1/WS/ServerpaginationForCommunicationQueryBasedOnMI?Flag=COMMUNICATED&draw=1&length=${length}&mtrInterface=${selectedLabel}&office=${office}&start=${start}`;
         const dataResponse = await fetch(baseUrl, {
           headers: { 'Authorization': `Bearer ${accessToken}` },
         });
@@ -61,8 +61,8 @@ const GetCommunicationStatusonMITypes = ({ selectedLabel, selectedCategory, offi
         setRecordsTotal(responseData.recordsTotal || 0); // Update this key based on your API response
         setData(responseData.data || []);
     }
-    else if(selectedLabel === 'Meter Not Communicated'){
-        const baseUrl = `/api/server3/UHES-0.0.1/WS/ServerpaginationForNonCommunicationQueryBasedOnMI?Flag=NOTCOMMUNICATED&draw=1&length=${length}&mtrInterface=${selectedCategory}&office=3459274e-f20f-4df8-a960-b10c5c228d3e&start=${start}`;
+    else if(selectedCategory === 'Meter Not Communicated'){
+        const baseUrl = `/api/server3/UHES-0.0.1/WS/ServerpaginationForNonCommunicationQueryBasedOnMI?Flag=NOTCOMMUNICATED&draw=1&length=${length}&mtrInterface=${selectedLabel}&office=3459274e-f20f-4df8-a960-b10c5c228d3e&start=${start}`;
         const dataResponse = await fetch(baseUrl, {
           headers: { 'Authorization': `Bearer ${accessToken}` },
         });

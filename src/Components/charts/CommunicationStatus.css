@@ -1,27 +1,76 @@
-.blck2{
-    margin-top: 5px;
-    margin-bottom: 5px;
-    border-radius: 12px;
-    background-color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-    height: 48vh;
-}
-.charts2{
+/* General container styling */
+.blck2 {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     width: 100%;
-    height: calc(100% - 55px);
-}
-.chart-name{
-    font-size: 15px;
-    text-align: center;
+    height: 65vh;
+  }
+  
+  .chart-name {
+    font-size: 18px;
     font-weight: bold;
-    padding: 10px 0;
-}
-.no-data-available {
+    text-align: center;
+    margin-bottom: 5px;
+    color: #333;
+  }
+  
+  .charts2 {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: calc(100% - 40px);
-    font-size: 16px;
-    color: #666;
-}
+    height: 100%;
+  }
+  
+  /* Modal Styling */
+  .modal-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1050;
+    background-color: #fff;
+    width: 1000px;
+    border-radius: 5px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    padding: 1em;
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+  
+  .modal-content {
+    max-height: 70vh;
+    width: 970px;
+    overflow-y: auto;
+  }
+  
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1em;
+  }
+  
+  .close-button {
+    padding: 0.5em 1em;
+    cursor: pointer;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+  }
+  
+  .close-button:hover {
+    background-color: #cc0000;
+  }
+  

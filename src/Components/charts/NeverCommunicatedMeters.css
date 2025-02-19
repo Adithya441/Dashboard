@@ -1,27 +1,89 @@
-.blck4{
-    margin-top: 5px;
-    margin-bottom: 5px;
-    border-radius: 12px;
+.blck4 {
     background-color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-    height: 48vh;
-}
-.charts4{
-    width: 100%;
-    height: calc(100% - 55px);
-}
-.chart-name{
-    font-size: 15px;
-    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    height: 65vh;
+  }
+  
+  .chart-name {
+    font-size: 18px;
     font-weight: bold;
-    padding: 10px 0;
-}
-.no-data-available {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .charts4 {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: calc(100% - 40px);
+    height: 400px;
+    width: 100%;
+  }
+  
+  .no-data-available {
+    text-align: center;
+    color: red;
     font-size: 16px;
-    color: #666;
-}
+    font-weight: bold;
+  }
+  
+  .modal-content {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    width: 1000px;
+    max-width: 100%;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1050;
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+  }
+  
+  .modal-header h5 {
+    margin: 0;
+  }
+  
+  .modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+  
+  .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+    width: 970px;
+  }
+  
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1em;
+  }
+  
+  .modal-footer button {
+    padding: 0.5em 1em;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .modal-footer button:hover {
+    background-color: #0056b3;
+  }
+  

@@ -21,9 +21,17 @@ const PowerConnectDisconnect = ({ meternum }) => {
     { field: "comments", filter: true, headerName: "Comments" },
     { field: "reason", filter: true, headerName: "Reason" },
     { field: "responseFrom", filter: true, headerName: "Request From" },
-    { field: "requestTime", filter: true, headerName: "Request Time" },
-    { field: "responseTime", filter: true, headerName: "Response Time" },
-    { field: "responseCode", filter: true, headerName: "Response Code" }
+    { field: "requestTime", filter: true, headerName: "Request Time" ,valueFormatter: (params) =>{return  formatDateTime(params.value)||"-" }},
+    { field: "responseTime", filter: true, headerName: "Response Time", valueFormatter:(params)=>{return params.value||"--"},valueFormatter: (params) =>{return  formatDateTime(params.value)||"-" } },
+    { field: "responseCode", filter: true, headerName: "Response Code" ,cellRenderer: (params) => {
+      if (!params.value) return "-"; 
+      const div = document.createElement("div");
+      div.innerHTML = params.value;
+      const text = div.textContent || div.innerText; 
+      const boldTag = div.querySelector("b"); 
+      const color = boldTag?.style.color || "black"; 
+      return <span style={{ color, fontWeight: "bold" }}>{text}</span>;
+    }}
   ]);
   //SERVICE URLS
   const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
@@ -75,7 +83,7 @@ const PowerConnectDisconnect = ({ meternum }) => {
       RequestFrom: row.responseFrom,
       RequestTime: row.requestTime,
       ResponseTime: row.responseTime,
-      ResponseCode: row.responseCode
+      ResponseCode: stripHtml(row.responseCode)
     }));
 
     const csvContent = [
@@ -91,6 +99,25 @@ const PowerConnectDisconnect = ({ meternum }) => {
     link.click();
     document.body.removeChild(link);
   };
+
+  const formatDateTime = (timestamp) => {
+    if (!timestamp) return ''; // Handle null or undefined values
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+};
+
+const stripHtml = (html) => {
+  if (!html) return ""; 
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return div.textContent || div.innerText || "";
+};
 
   const exportExcel = async () => {
     const workbook = new ExcelJS.Workbook();
@@ -112,8 +139,12 @@ const PowerConnectDisconnect = ({ meternum }) => {
       };
     });
 
-    rowData.forEach(row => {
-      worksheet.addRow(Object.values(row));
+    rowData.forEach((row) => {
+      worksheet.addRow(
+        headers.map((header) =>
+          header === "responseCode" ? stripHtml(row[header]) : row[header]
+        )
+      );
     });
 
     worksheet.autoFilter = {
@@ -140,7 +171,7 @@ const PowerConnectDisconnect = ({ meternum }) => {
     const tableRows = [];
 
     rowData.forEach(row => {
-      tableRows.push([row.transactionId, row.comments, row.reason, row.responseFrom, row.requestTime, row.responseTime, row.responseCode]);
+      tableRows.push([row.transactionId, row.comments, row.reason, row.responseFrom, row.requestTime, row.responseTime, stripHtml(row.responseCode)]);
     });
 
     doc.autoTable(tableColumn, tableRows);

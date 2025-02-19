@@ -6,6 +6,7 @@ import "jspdf-autotable";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import { ClientSideRowModelModule } from 'ag-grid-community';
+import loadingGif from '../../../Assets/img2.gif';
 
 import { useState, useEffect } from 'react';
 import './styles.css';
@@ -18,14 +19,22 @@ const DynamicOnDemand = ({ meternum, meterty, meterman }) => {
   const [profileName, setProfileName] = useState();
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
-  const [loadingStatus,setLoadingStatus]=useState();
+  const [loading,setLoading]=useState();
   const [colDefs, setColDefs] = useState([
     { field: "transactionId", filter: true, flex: 2, headerName: "Transaction Id" },
     { field: "requestType", filter: true, flex: 2, headerName: "Request Type" },
     { field: "requestFrom", filter: true, flex: 2, headerName: "Request From" },
-    { field: "requestTime", filter: true, flex: 2, headerName: "Request Time" },
-    { field: "responseTime", filter: true, flex: 2, headerName: "Response Time" },
-    { field: "responseCode", filter: true, flex: 2, headerName: "Response" }
+    { field: "requestTime", filter: true, flex: 2, headerName: "Request Time", valueFormatter: (params) =>{return  formatDateTime(params.value)||"-" } },
+    { field: "responseTime", filter: true, flex: 2, headerName: "Response Time", valueFormatter: (params) =>{return  formatDateTime(params.value)||"-" } },
+    { field: "responseCode", filter: true, flex: 2, headerName: "Response" ,cellRenderer: (params) => {
+      if (!params.value) return "--"; 
+      const div = document.createElement("div");
+      div.innerHTML = params.value;
+      const text = div.textContent || div.innerText; 
+      const boldTag = div.querySelector("b"); 
+      const color = boldTag?.style.color || "black"; 
+      return <span style={{ color, fontWeight: "bold" }}>{text}</span>;
+    }} 
   ]);
   //SERVICE URLS
   const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
@@ -100,7 +109,7 @@ const DynamicOnDemand = ({ meternum, meterty, meterman }) => {
       const responseData = await dataResponse.json();
       setRowData(responseData.data);
       if((responseData.data).length==0){
-        setLoadingStatus('Data not found');
+        setLoading('Data not found');
       }
       setFromDate('');
       setToDate('');
@@ -121,7 +130,7 @@ const DynamicOnDemand = ({ meternum, meterty, meterman }) => {
       RequestFrom: row.requestFrom,
       RequestTime: row.requestTime,
       ResponseTime: row.responseTime,
-      Response: row.responseCode
+      Response: stripHtml(row.responseCode)
     }));
 
     const csvContent = [
@@ -137,6 +146,25 @@ const DynamicOnDemand = ({ meternum, meterty, meterman }) => {
     link.click();
     document.body.removeChild(link);
   };
+
+  const formatDateTime = (timestamp) => {
+    if (!timestamp) return ''; // Handle null or undefined values
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+};
+
+const stripHtml = (html) => {
+  if (!html) return ""; 
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return div.textContent || div.innerText || "";
+};
 
   const exportExcel = async () => {
     const workbook = new ExcelJS.Workbook();
@@ -157,9 +185,12 @@ const DynamicOnDemand = ({ meternum, meterty, meterman }) => {
         fgColor: { argb: 'FFADD8E6' },
       };
     });
-
-    rowData.forEach(row => {
-      worksheet.addRow(Object.values(row));
+    rowData.forEach((row) => {
+      worksheet.addRow(
+        headers.map((header) =>
+          header === "responseCode" ? stripHtml(row[header]) : row[header]
+        )
+      );
     });
 
     worksheet.autoFilter = {
@@ -186,7 +217,7 @@ const DynamicOnDemand = ({ meternum, meterty, meterman }) => {
     const tableRows = [];
 
     rowData.forEach(row => {
-      tableRows.push([row.transactionId, row.requestType, row.requestFrom, row.requestTime, row.responseTime, row.responseCode]);
+      tableRows.push([row.transactionId, row.requestType, row.requestFrom, row.requestTime, row.responseTime, stripHtml(row.responseCode)]);
     });
 
     doc.autoTable(tableColumn, tableRows);
@@ -291,12 +322,16 @@ const DynamicOnDemand = ({ meternum, meterty, meterman }) => {
               paginationPageSize={5}
               paginationPageSizeSelector={[5, 10, 15, 20]}
               modules={[ClientSideRowModelModule]}
+              overlayLoadingTemplate={`<div style="display: flex; justify-content: center; align-items: center; height: 100%; background-color: rgba(255, 255, 255, 0.8);">
+            <img src="${loadingGif}" alt="Loading..." style="width: 50px; height: 50px;" /></div>`} overlayNoRowsTemplate={'<span class="ag-overlay-no-rows-center">No rows to display</span>'}
+            onGridReady={(params) => { if (loading) {params.api.showLoadingOverlay();} else {params.api.hideOverlay();}}}
+           
             />
           </div>
         </div>
       ):(
         <div className='text-danger mx-auto text-center'>
-          {loadingStatus}
+          {loading}
         </div>
       )
       }

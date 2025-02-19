@@ -5,11 +5,11 @@
     background-color: white;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
     overflow: hidden;
-    height: 48vh;
+    height: 58vh;
 }
 .charts5{
     width: 100%;
-    height: calc(100% - 52px);
+    height: calc(100% - 60px);
 }
 .chart-name{
     font-size: 15px;

@@ -8,7 +8,7 @@
 }
 
 .ag-theme-quartz {
-    --ag-header-background-color: #51a7d2;
+    --ag-header-background-color: #5cb0e7;
     --ag-header-foreground-color: rgb(225,225,225);
 }
   
@@ -50,11 +50,10 @@
 
 .form-title {
     background-color: #0081c2;
-    color: white;                
-    padding: 8px 16px;              
+    color: white;                 
     border-radius: 4px 4px 0 0;  
     text-align: left;           
-    font-size: 18px;
+    font-size: 12px;
     margin-bottom: 20px;        
 }
 
@@ -136,12 +135,13 @@
 
 .submitbutt {
     width: 100px;
+    background-color: #5cb0e7 !important;
 }
 
   
   
 .export-button {
-    background-color: #69acf3;; 
+    background-color: #5cb0e7;
     border: none;
     color: white; 
     padding: 5px 50px;
@@ -157,11 +157,11 @@
 }
 
 .export-button:hover {
-    background-color: #69acf3; 
+    background-color: #5cb0e7; 
 }
 
 .export-button:focus {
-    box-shadow: 0 0 4px #69acf3; 
+    box-shadow: 0 0 4px #5cb0e7; 
 }
 
 .submit-button:hover {

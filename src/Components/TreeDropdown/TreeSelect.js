@@ -1,5 +1,6 @@
 import { TreeSelect } from 'antd';
 import {Form,Col} from 'react-bootstrap';
+import { Fragment } from 'react';
 
 const renameKeys = (data, keyMap) => {
   return data.map((item) => {
@@ -534,7 +535,7 @@ const TreeSelectCmp = ({onChangeOffice,officeId}) => {
   const transformedData = renameKeys(data, keyMap);
   
   return (
-    <Col xs={12} md={4}>
+    <Fragment>
       <Form.Group>
       <Form.Label><span className="text-danger">*</span>Office</Form.Label>
       <TreeSelect
@@ -547,7 +548,7 @@ const TreeSelectCmp = ({onChangeOffice,officeId}) => {
         onChangeOffice={onChangeOffice}
       />
     </Form.Group>
-    </Col>
+    </Fragment>
   );
 }
 

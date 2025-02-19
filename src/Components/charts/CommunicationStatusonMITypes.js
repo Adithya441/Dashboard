@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import ReactApexChart from 'react-apexcharts';
+import ReactECharts from 'echarts-for-react';
 import { Modal, Button } from 'react-bootstrap';
 import GetCommunicationStatusonMITypes from './GetCommunicationStatusonMITypes';
-import './CommunicationStatusonMITypes.css'
+import './CommunicationStatusonMITypes.css';
 
-const CommunicationStatusonMITypes = ({officeid}) => {
+const CommunicationStatusonMITypes = ({ officeid }) => {
   const [chartData, setChartData] = useState(null);
+  const [communicated, setCommunicated] = useState(0);
+  const [notCommunicated, setNotCommunicated] = useState(0);
   const [loading, setLoading] = useState(true);
   const [dataavailable, setDataAvailable] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [total, setTotal] = useState(0);
   const [selectedData, setSelectedData] = useState(null);
   const [categorys, setCategory] = useState(null);
   const [selectlabel, setSelectlabel] = useState(null);
@@ -72,64 +75,80 @@ const CommunicationStatusonMITypes = ({officeid}) => {
         const total = communicatedData[index] + notCommunicatedData[index];
         const commPercent = total ? ((communicatedData[index] / total) * 100).toFixed(2) : 0;
         const notCommPercent = total ? ((notCommunicatedData[index] / total) * 100).toFixed(2) : 0;
-        return [parseFloat(commPercent), parseFloat(notCommPercent)];
+        return [communicatedData[index], notCommunicatedData[index], commPercent, notCommPercent];
       });
 
       const chartOptions = {
-        chart: {
-          type: 'bar',
-          stacked: true,
-          stackType: '100%',
-          toolbar: {
-            show: false,
-          },
-          events: {
-            dataPointSelection: (event, chartContext, config) => {
-              const { dataPointIndex, seriesIndex } = config;
-              const category = labels[dataPointIndex];
-              const value = percentageData[dataPointIndex][seriesIndex];
-              const label = seriesIndex === 0 ? 'Meter Communicated' : 'Meter Not Communicated';
-              setCategory(category);
-              setSelectlabel(label);
-              setSelectedData({ category, value, label });
-              setShowModal(true);
-            },
-          },
+        title: {
+          text: 'Meter Communication Status Based on MI Types',
         },
-        plotOptions: {
-          bar: {
-            horizontal: true,
-          },
-        },
-        xaxis: {
-          categories: labels,
-        },
-        yaxis: {
-          max: 100,
-        },
-        colors: ['rgb(35, 240, 12)', 'rgb(28, 148, 142)'],
         tooltip: {
-          y: {
-            formatter: (val) => `${val}%`,
+          trigger: 'item',
+          formatter: function (params) {
+            // Get the index of the hovered item
+            const index = params.dataIndex;
+            // Get actual values from original data arrays
+            const actualValue =
+              params.seriesName === 'Meter Communicated'
+                ? communicatedData[index]
+                : notCommunicatedData[index];
+      
+            return `${params.name} <br /> ${params.seriesName}: ${actualValue}`;
           },
         },
         legend: {
-          position: 'top',
+          data: ['Meter Communicated', 'Meter Not Communicated'],
+          top: '10%',
         },
+        grid: {
+          left: '0%',  // Increase left margin to avoid label truncation
+          right: '5%',
+          bottom: '0%',
+          containLabel: true
+        },
+        yAxis: {
+          type: 'category',
+          data: labels,
+        },
+        xAxis: {
+          type: 'value',
+          max: 100,
+        },
+        series: [
+          {
+            name: 'Meter Communicated',
+            type: 'bar',
+            stack: 'total',
+            data: percentageData.map((d) => d[2]),
+            itemStyle: {
+              color: 'rgb(35, 240, 12)',
+            },
+            label: {
+              show: true,
+              position: 'inside',
+              formatter: '{c}', // Displays percentage on bars
+              color: '#fff', // Makes text visible inside bars
+            },
+          },
+          {
+            name: 'Meter Not Communicated',
+            type: 'bar',
+            stack: 'total',
+            data: percentageData.map((d) => d[3]),
+            itemStyle: {
+              color: 'rgb(28, 148, 142)',
+            },
+            label: {
+              show: true,
+              position: 'inside',
+              formatter: '{c}', // Displays percentage on bars
+              color: '#fff',
+            },
+          },
+        ],
       };
 
-      const series = [
-        {
-          name: 'Meter Communicated',
-          data: percentageData.map((d) => d[0]),
-        },
-        {
-          name: 'Meter Not Communicated',
-          data: percentageData.map((d) => d[1]),
-        },
-      ];
-
-      setChartData({ options: chartOptions, series });
+      setChartData(chartOptions);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -137,7 +156,35 @@ const CommunicationStatusonMITypes = ({officeid}) => {
       setDataAvailable("No Data Available");
     }
   };
-
+  const onChartClick = (params) => {
+    console.log("Chart Click Params:", params); // Debugging log
+  
+    const selectedLabel = params.name; // Category name (e.g., MI Type)
+    const selectedValue = params.value; // Selected bar value
+    const selectedSeries = params.seriesName; // Series name ('Meter Communicated' or 'Meter Not Communicated')
+  
+    if (!chartData || !chartData.series) return;
+  
+    // Ensure the category is valid
+    const index = chartData.yAxis.data.indexOf(selectedLabel);
+    if (index === -1) return;
+  
+    const communicated = chartData.series[0].data[index];
+    setCommunicated(communicated);
+    const notCommunicated = chartData.series[1].data[index];
+    setNotCommunicated(notCommunicated);
+    const total = communicated + notCommunicated;
+    const percentage = total ? ((selectedValue / total) * 100).toFixed(2) : 0;
+  
+    console.log("Selected Series:", selectedSeries); // Debugging log
+    setSelectedData({ label: selectedLabel, value: selectedValue, percentage });
+    setSelectlabel(selectedLabel);
+    setCategory(selectedSeries); // Set category from `seriesName`
+    setShowModal(true);
+  };
+  
+  
+  console.log(categorys)
   useEffect(() => {
     setLoading(true);
     fetchData();
@@ -147,19 +194,16 @@ const CommunicationStatusonMITypes = ({officeid}) => {
 
   return (
     <div className="blck">
-      <h5 className='chart-name'>Meter Communication Status Based on MI Types</h5>
       {loading ? (
         <div>Loading...</div>
       ) : dataavailable ? (
         <div className="no-data-available">{dataavailable}</div>
       ) : chartData ? (
         <div className="charts">
-          <ReactApexChart
-            options={chartData.options}
-            series={chartData.series}
-            type="bar"
-            width="100%"
-            height="100%"
+          <ReactECharts
+            option={chartData}
+            onEvents={{ click: onChartClick }}
+            style={{ width: '100%', height: '85%' }}
           />
         </div>
       ) : (
@@ -190,7 +234,7 @@ const CommunicationStatusonMITypes = ({officeid}) => {
           </div>
 
           <div style={{ maxHeight: '70vh', width: '970px', overflowY: 'auto' }}>
-            <GetCommunicationStatusonMITypes selectedLabel={selectlabel} selectedCategory={categorys} office={officeid}/>
+            <GetCommunicationStatusonMITypes selectedLabel={selectlabel} selectedCategory={categorys} office={officeid} />
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1em' }}>

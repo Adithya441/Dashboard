@@ -77,15 +77,31 @@ color: white !important; /* White text for active item */
 border-radius: 4px; /* Optional: Rounded corners */
 }
 
+.ant-layout-sider {
+  overflow-y: auto !important;  /* Enables scrolling */
+  overflow-x: hidden !important; /* Prevents horizontal scrolling */
+}
+
+/* Scrollbar styles */
+.ant-layout-sider::-webkit-scrollbar {
+  width: 3px;  /* Decrease scrollbar width */
+}
+
+.ant-layout-sider::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.5); /* Style the scrollbar */
+  border-radius: 10px; /* Make it rounded */
+}
+
+.ant-layout-sider::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1); /* Track background */
+}
+
+
 /* Submenu title styles */
 .ant-menu-submenu-title {
 color: white !important; /* Default text color */
 }
 
-/* Hover effect for submenu title */
-.ant-menu-submenu-title:hover {
-color: #1890ff !important; /* Blue text on hover */
-}
 
 /* Collapsed sidebar menu item styles */
 .ant-menu-item.collapsed {
@@ -93,9 +109,44 @@ text-align: center; /* Center text or icons */
 color: #ccc !important; /* Light gray for collapsed items */
 }
 
+.ant-menu-item:hover {
+  background-color: #293846 !important; /* Submenu item hover background */
+  color: white !important;
+}
+
+.ant-layout-sider-trigger {
+  display: none !important;
+}
+
+.ant-menu ant-menu-sub ant-menu-vertical{
+  background-color: #293846 !important; /* Submenu item hover background */
+}
+
+:where(.css-dev-only-do-not-override-77tu7h).ant-menu-submenu-popup .ant-menu-vertical.ant-menu-sub:not([class*='-active']) {
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: #293846 !important;
+}
+
+/* Apply border-left for expanded sub-menu items */
+.ant-menu-sub.ant-menu-inline {
+  border-left: 3px solid #1890ff !important; /* Adjust color as needed */
+  padding-left: 8px;
+}
+
+.ant-menu-sub.ant-menu-inline :hover{
+  font-weight: 700 !important;
+  font-size: 11px !important;
+}
+
+
+.custom-menu .ant-menu-submenu-popup {
+  background-color: red !important; /* Change this to the color you want */
+}
+
 /* Style for the sidebar */
 .ant-layout-sider {
-background-color: #089bab !important; /* Background color for the sidebar */
+background-color: #293846 !important; /* Background color for the sidebar */
 }
 
 .custom-tabs .ant-tabs-tab-active {
@@ -110,4 +161,22 @@ transition: all 0.3s ease;
 
 :where(.css-dev-only-do-not-override-77tu7h).ant-tabs .ant-tabs-tab+.ant-tabs-tab {
 margin: 0 0 0 2px;
+}
+
+.scrollable-popup {
+  max-height: 300px;  /* Set a max height for scrolling */
+  overflow-y: auto;   /* Enable vertical scrolling */
+}
+
+.scrollable-popup::-webkit-scrollbar {
+  width: 5px; /* Reduce scrollbar width */
+}
+
+.scrollable-popup::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.5); /* Light-colored scrollbar */
+  border-radius: 5px; /* Round scrollbar edges */
+}
+
+.scrollable-popup::-webkit-scrollbar-track {
+  background: transparent; /* Hide track background */
 }

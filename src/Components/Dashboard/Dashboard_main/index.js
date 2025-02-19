@@ -627,67 +627,13 @@ const Index = () => {
           </Col>
         </Row>
 
+
         <Row className="mb-3">
-          {[menclCount, womenclCount, jewCount, electCount].map((count, index) => (
-            <Col key={index} xs={12} md={6} lg={3}>
-              <div className="iq-card">
-                <div
-                  className={`iq-card-body iq-bg-${
-                    ["primary", "warning", "danger", "info"][index]
-                  } rounded-4`}
-                  style={{
-                    backgroundColor: ["#ceebee", "#fae9dd", "#fcecec", "#e5faff"][index],
-                  }}
-                >
-                  <div
-                    className="d-flex align-items-center justify-content-between"
-                    style={{
-                      backgroundColor: ["#ceebee ", "#fae9dd", "#fcecec", "#e5faff"][index],
-                      borderRadius: "10px",
-                      padding: "10px 10px",
-                    }}
-                  >
-                    <div
-                      className={`rounded-circle iq-card-icon bg-${
-                        ["primary", "warning", "danger", "info"][index]
-                      }`}
-                    >
-                      <RiBillLine style={{ fontSize: "30px" }} />
-                    </div>
-                    <div
-                      className="text-end"
-                      style={{ width: "20vh", height: "11vh" }}
-                    >
-                      <Typography variant="p" style={{ fontSize: "14px" }}>
-                        {
-                          [
-                            "Meter Count",
-                            "Active Meters",
-                            "De-active Meters",
-                            "Today Active",
-                          ][index]
-                        }
-                      </Typography>
-                      <Typography variant="h5" className="mb-0">
-                        <span className="counter" style={{ fontSize: "14px" }}>
-                          {count}
-                        </span>
-                      </Typography>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Col>
-          ))}
-        </Row>
-
-
-        <Row className="mb-3 g-2">
           <Col md={4}>
             <CommunicationStatus key={office} officeid={office} />
           </Col>
           <Col md={4}>
-            <NonCommunicatedMeters key={office} officeid={office} />
+            <NonCommunicatedMeters key={office} officeid={office}/>
           </Col>
           <Col md={4}>
             <NeverCommunicatedMeters key={office} officeid={office} />

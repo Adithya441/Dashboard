@@ -56,8 +56,8 @@ const LoginPage = () => {
 
     if (!data.password) {
       errors.password = 'Password is required!';
-    } else if (data.password.length > 10) {
-      errors.password = 'Password should have max 10 characters!';
+    } else if (data.password.length > 20) {
+      errors.password = 'Password should have max 20 characters!';
     }
 
     return errors;
@@ -78,7 +78,7 @@ const LoginPage = () => {
       );
 
       if (user) {
-        sessionStorage.setItem('username', user.username);
+        localStorage.setItem('username', user.username);
         navigate('/dashboard');
       } else {
         setErrMsg('Invalid username or password!');

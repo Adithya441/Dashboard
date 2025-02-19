@@ -1,24 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import ReactApexChart from 'react-apexcharts';
-import { Modal } from 'react-bootstrap';
+import ReactECharts from 'echarts-for-react';
 import GetOlderonMITypes from './GetOlderonMITypes';
-import './MITypes.css'
+import './MITypes.css';
 
-const OlderonMITypes = ({officeid}) => {
+const OlderonMITypes = ({ officeid }) => {
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [dataavailable, setDataAvailable] = useState(null);
+  const [dataAvailable, setDataAvailable] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedData, setSelectedData] = useState(null);
-  const [categorys, setCategory] = useState(null);
-  const [selectlabel, setSelectlabel] = useState(null);
+  const [category, setCategory] = useState(null);
+  const [selectedLabel, setSelectedLabel] = useState(null);
 
   const colorPalette = [
-    'rgb(57, 125, 200)',  // Color 1
-    'rgb(148, 140, 28)',  // Color 2
-    'rgb(48, 71, 88)',    // Color 3
-    'rgb(57, 125, 200)',  // Color 4 (same as Color 1 for repeating)
-    'rgb(148, 140, 28)'   // Color 5 (same as Color 2 for repeating)
+    '#3498db', 
+    '#e67e22', 
+    '#2ecc71', 
+    '#f1c40f', 
+    '#9b59b6',  
   ];
 
   const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
@@ -39,96 +38,99 @@ const OlderonMITypes = ({officeid}) => {
           client_secret: 'secret',
         }),
       });
-  
-      if (!tokenResponse.ok) return <p>No Data available</p>
+
+      if (!tokenResponse.ok) {
+        setDataAvailable("No Data Available");
+        setLoading(false);
+        return;
+      }
+      
       const { access_token: accessToken } = await tokenResponse.json();
-  
+
       const dataResponse = await fetch(baseUrl, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-  
-      if (!dataResponse.ok) return <p>No Data available</p>
-      const responseData = await dataResponse.json();
-  
-      // Check for null or invalid data
-      
-      if (
-        !responseData.yData
-      ) {
-        setLoading(false);
+
+      if (!dataResponse.ok) {
         setDataAvailable("No Data Available");
+        setLoading(false);
         return;
       }
-  
+
+      const responseData = await dataResponse.json();
+
+      if (!responseData.yData) {
+        setDataAvailable("No Data Available");
+        setLoading(false);
+        return;
+      }
+
       const labels = responseData.xData; // Communication types like BCITSRF, GPRS, etc.
       const ranges = responseData.yData.map(item => item.name); // Ranges like "1D-3D", "3D-1W", etc.
       const rangeData = responseData.yData.map(item => item.data);
-  
+
       const percentageData = labels.map((_, index) => {
         const total = rangeData.reduce((acc, range) => acc + range[index], 0);
-        return rangeData.map(range => (total ? ((range[index] / total) * 100).toFixed(2) : 0));
+        return rangeData.map(range => (total ? ((range[index] / total) * 100).toFixed(1) : 0));
       });
-  
+
       const series = ranges.map((rangeName, i) => ({
         name: rangeName,
+        type: 'bar',
+        stack: 'total',
         data: percentageData.map(data => parseFloat(data[i])),
-      }));
-  
-      setChartData({
-        options: {
-          chart: {
-            type: 'bar',
-            stacked: true,
-            stackType: '100%',
-            toolbar: {
-              show: false,
-              tools: {
-                download: true,
-              },
-              export: {
-                csv: { filename: `Getting Older Based on MI Types` },
-                svg: { filename: `Getting Older Based on MI Types` },
-                png: { filename: `Getting Older Based on MI Types` },
-              },
-            },
-            events: {
-              dataPointSelection: (event, chartContext, config) => {
-                const { dataPointIndex, seriesIndex } = config;
-                const category = labels[dataPointIndex];
-                const value = series[seriesIndex].data[dataPointIndex];
-                const label = series[seriesIndex].name;
-                setCategory(category);
-                setSelectlabel(label);
-                setSelectedData({ category, value, label });
-                setShowModal(true);
-              },
-            },
-          },
-          plotOptions: {
-            bar: {
-              horizontal: true,
-            },
-          },
-          xaxis: {
-            categories: labels,
-          },
-          yaxis: {
-            max: 100,
-          },
-          colors: colorPalette,
-          tooltip: {
-            y: {
-              formatter: (val) => `${val.toFixed(2)}%`,
-            },
-          },
-          legend: {
-            position: 'top',
+        label: {
+          show: true,
+          position: 'inside',  // Position the label inside the bar
+          formatter: (params) => {
+            const index = params.dataIndex;
+            const percentage = percentageData[index][i];  // Getting the percentage for this index
+            return `${percentage}`;  // Display the percentage
           },
         },
+      }));
+      
+
+      setChartData({
+        tooltip: {
+          trigger: 'item',
+          formatter: function (params) {
+            // Get the index of the hovered item
+            const index = params.dataIndex;
+            // Get actual values from original data arrays
+            const actualValue = rangeData[params.seriesIndex][params.dataIndex];
+      
+            return `${params.name} <br /> ${params.seriesName}: ${actualValue}`;
+          },
+        },
+        legend: {
+          top: '15%',
+          left: 'center'
+        },
+        title: {
+          text: 'Older Based on MI Types',
+        },
+        grid: {
+          top: '25%',
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'value',
+          max: 100
+        },
+        yAxis: {
+          type: 'category',
+          data: labels
+        },
         series: series,
+        color: colorPalette,
       });
+
       setLoading(false);
     } catch (err) {
       console.error(err.message);
@@ -136,28 +138,37 @@ const OlderonMITypes = ({officeid}) => {
       setLoading(false);
     }
   };
-  
 
   useEffect(() => {
     setLoading(true);
     fetchData();
   }, [officeid]);
-  
+
+  const onChartClick = (params) => {
+    setCategory(params.name);
+    setSelectedLabel(params.seriesName);
+    setSelectedData({
+      category: params.name,
+      value: params.value,
+      label: params.seriesName
+    });
+    setShowModal(true);
+  };
 
   return (
     <div className="blck1">
-      <h5 className='chart-name'>Older Based on MI Types</h5>
       {loading ? (
         <div>Loading...</div>
-      ) : dataavailable ? (
-        <div className="no-data-available">{dataavailable}</div>
+      ) : dataAvailable ? (
+        <div className="no-data-available">{dataAvailable}</div>
       ) : chartData ? (
         <div className="charts1">
-          <ReactApexChart
-            options={chartData.options}
-            series={chartData.series}
-            type="bar"
-            height="100%"
+          <ReactECharts
+            option={chartData}
+            style={{ height: '100%', width: '100%',marginTop: '25px' }}
+            onEvents={{
+              click: onChartClick
+            }}
           />
         </div>
       ) : (
@@ -181,14 +192,14 @@ const OlderonMITypes = ({officeid}) => {
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h5 id="contained-modal-title-vcenter">{selectlabel}</h5>
+            <h5 id="contained-modal-title-vcenter">{selectedLabel}</h5>
             <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.5rem' }}>
               &times;
             </button>
           </div>
 
           <div style={{ maxHeight: '70vh', width: '970px', overflowY: 'auto' }}>
-            <GetOlderonMITypes selectedLabel={selectlabel} selectedCategory={categorys} office={officeid}/>
+            <GetOlderonMITypes selectedLabel={selectedLabel} selectedCategory={category} office={officeid} />
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1em' }}>
