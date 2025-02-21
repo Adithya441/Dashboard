@@ -222,6 +222,7 @@ const SecuritySetup = ({ meternum }) => {
         <br />
         <div className='col-8  m-2 text-center mx-auto'>
           <button className='btn btn-primary btn-md'
+            style={{backgroundColor:'#5cb0e7'}}
             onClick={(e) => {
               e.preventDefault();
               fetchGridData();
@@ -232,10 +233,10 @@ const SecuritySetup = ({ meternum }) => {
         <div className="container-fluid col-12">
           <div className="d-flex flex-wrap mt-4">
             <div className="d-flex flex-wrap" style={{ marginLeft: '1vw', gap: '1vw' }}>
-              <button className="btn btn-primary btn-md mr-1" onClick={exportExcel}>Excel</button>
-              <button className='btn btn-primary btn-md mr-1' onClick={exportPDF}>PDF</button>
-              <button className='btn btn-primary btn-md mr-1' onClick={exportCSV}>CSV</button>
-              <button className='btn btn-primary btn-md mr-1' onClick={copyData}>Copy</button>
+              <button className="btn btn-primary btn-md mr-1" onClick={exportExcel} style={{backgroundColor:'#5cb0e7'}}>Excel</button>
+              <button className='btn btn-primary btn-md mr-1' onClick={exportPDF} style={{backgroundColor:'#5cb0e7'}}>PDF</button>
+              <button className='btn btn-primary btn-md mr-1' onClick={exportCSV} style={{backgroundColor:'#5cb0e7'}}>CSV</button>
+              <button className='btn btn-primary btn-md mr-1' onClick={copyData} style={{backgroundColor:'#5cb0e7'}}>Copy</button>
             </div>
             <div className="align-right" style={{ marginLeft: '2vw' }}>
               <input type="text" className="form-control" placeholder="search" value={searchKey} onChange={searchData} />

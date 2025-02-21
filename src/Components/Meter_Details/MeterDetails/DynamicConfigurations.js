@@ -451,6 +451,7 @@ const copyData = () => {
         <div className="text-center">
           <button
             className="btn btn-primary"
+            style={{backgroundColor:'#5cb0e7'}}
             onClick={(e) => {
               e.preventDefault();
               fetchgetsetCalendars();
@@ -466,10 +467,10 @@ const copyData = () => {
           <div className="container-fluid col-12">
             <div className="d-flex flex-wrap justify-content-between mt-4">
               <div className="d-flex flex-wrap gap-2" style={{ marginLeft: '1vw' }}>
-                <button className="btn btn-primary btn-md" onClick={exportExcel}>Excel</button>
-                <button className="btn btn-primary btn-md" onClick={exportPDF}>PDF</button>
-                <button className="btn btn-primary btn-md" onClick={exportCSV}>CSV</button>
-                <button className="btn btn-primary btn-md" onClick={copyData}>Copy</button>
+                <button className="btn btn-primary btn-md" onClick={exportExcel} style={{backgroundColor:'#5cb0e7'}}>Excel</button>
+                <button className="btn btn-primary btn-md" onClick={exportPDF} style={{backgroundColor:'#5cb0e7'}}>PDF</button>
+                <button className="btn btn-primary btn-md" onClick={exportCSV} style={{backgroundColor:'#5cb0e7'}}>CSV</button>
+                <button className="btn btn-primary btn-md" onClick={copyData} style={{backgroundColor:'#5cb0e7'}}>Copy</button>
               </div>
               <div style={{ marginRight: '1vw' }}>
                 <input
@@ -515,7 +516,7 @@ const copyData = () => {
     </p>
   </Modal.Body>
       <Modal.Footer style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-      <Button variant="primary"style={{ textAlign: "center" }} onClick={handleClose}>
+      <Button variant="primary" style={{ textAlign: "center",backgroundColor:'#5cb0e7' }} onClick={handleClose}>
         OK
       </Button>
     </Modal.Footer>

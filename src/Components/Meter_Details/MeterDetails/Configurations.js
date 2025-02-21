@@ -341,6 +341,7 @@ const stripHtml = (html) => {
         )}
         <div className="col-10 text-center mt-4 mx-auto">
           <button className="btn btn-primary"
+            style={{backgroundColor:'#5cb0e7'}}
             onClick={(e) => {
               e.preventDefault();
               setLoadingStatus('Loading Data');
@@ -356,10 +357,10 @@ const stripHtml = (html) => {
               <div className="container-fluid col-12">
                 <div className="col-xs-12 mx-auto d-flex flex-wrap mt-4">
                   <div className="d-flex flex-wrap col-xs-10  col-md-6 gap-2">
-                    <button className="btn btn-primary btn-md mr-1" onClick={exportExcel}>Excel</button>
-                    <button className='btn btn-primary btn-md mr-1' onClick={exportPDF}>PDF</button>
-                    <button className='btn btn-primary btn-md mr-1' onClick={exportCSV}>CSV</button>
-                    <button className='btn btn-primary btn-md mr-1' onClick={copyData}>Copy</button>
+                    <button className="btn btn-primary btn-md mr-1" onClick={exportExcel} style={{backgroundColor:'#5cb0e7'}}>Excel</button>
+                    <button className='btn btn-primary btn-md mr-1' onClick={exportPDF} style={{backgroundColor:'#5cb0e7'}}>PDF</button>
+                    <button className='btn btn-primary btn-md mr-1' onClick={exportCSV} style={{backgroundColor:'#5cb0e7'}}>CSV</button>
+                    <button className='btn btn-primary btn-md mr-1' onClick={copyData} style={{backgroundColor:'#5cb0e7'}}>Copy</button>
                   </div>
                   <div className="col-xs-8 col-md-3 align-right">
                     <input type="text" className="form-control" placeholder="search" value={searchKey} onChange={searchData} />

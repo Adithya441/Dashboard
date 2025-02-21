@@ -278,6 +278,7 @@ const TransactionLog = ({ meternum , officeid }) => {
 
           <div className="col-12 text-center mt-4 mb-4">
             <button className="btn btn-primary "
+              style={{backgroundColor:'#5cb0e7'}}
               onClick={(e) => {
                 e.preventDefault();
                 fetchGridData();
@@ -290,10 +291,10 @@ const TransactionLog = ({ meternum , officeid }) => {
         <div className="container-fluid col-xs-12 col-md-10 mx-auto">
           <div className="col-12 mx-auto d-flex flex-wrap mt-4">
             <div className="d-flex flex-wrap col-xs-10 p-2 col-md-6">
-              <button className="btn btn-primary btn-md m-1" onClick={exportExcel}>Excel</button>
-              <button className='btn btn-primary btn-md m-1' onClick={exportPDF}>PDF</button>
-              <button className='btn btn-primary btn-md m-1' onClick={exportCSV}>CSV</button>
-              <button className='btn btn-primary btn-md m-1' onClick={copyData}>Copy</button>
+              <button className="btn btn-primary btn-md m-1" onClick={exportExcel} style={{backgroundColor:'#5cb0e7'}}>Excel</button>
+              <button className='btn btn-primary btn-md m-1' onClick={exportPDF} style={{backgroundColor:'#5cb0e7'}}>PDF</button>
+              <button className='btn btn-primary btn-md m-1' onClick={exportCSV} style={{backgroundColor:'#5cb0e7'}}>CSV</button>
+              <button className='btn btn-primary btn-md m-1' onClick={copyData} style={{backgroundColor:'#5cb0e7'}}>Copy</button>
             </div>
             <div className="col-xs-10 col-md-4 align-item-right">
               <input type="text" className="form-control" placeholder="search" value={searchKey} onChange={searchData} />

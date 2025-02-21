@@ -232,15 +232,15 @@ const FirmwareUpgrade = () => {
           <p>Meter Firmware Version:{firmware}</p>
         </div>
         <div className='col-8  m-2 text-center mx-auto'>
-          <button className='btn btn-primary btn-md' onClick={getData}>Update</button>
+          <button className='btn btn-primary btn-md' onClick={getData} style={{backgroundColor:'#5cb0e7'}}>Update</button>
         </div>
       </form>
       <div className="d-flex flex-wrap mt-4">
         <div className="d-flex flex-wrap" style={{ gap: '1vw' }}>
-          <button className="btn btn-primary btn-md mr-1" onClick={exportExcel}>Excel</button>
-          <button className='btn btn-primary btn-md mr-1' onClick={exportPDF}>PDF</button>
-          <button className='btn btn-primary btn-md mr-1' onClick={exportCSV}>CSV</button>
-          <button className="btn btn-primary btn-md mr-1" onClick={copyData}>Copy</button>
+          <button className="btn btn-primary btn-md mr-1" onClick={exportExcel} style={{backgroundColor:'#5cb0e7'}}>Excel</button>
+          <button className='btn btn-primary btn-md mr-1' onClick={exportPDF} style={{backgroundColor:'#5cb0e7'}}>PDF</button>
+          <button className='btn btn-primary btn-md mr-1' onClick={exportCSV} style={{backgroundColor:'#5cb0e7'}}>CSV</button>
+          <button className="btn btn-primary btn-md mr-1" onClick={copyData} style={{backgroundColor:'#5cb0e7'}}>Copy</button>
         </div>
         <div className="align-right" style={{ marginLeft: '2vw' }}>
           <input type="text" className="form-control" placeholder="search" value={searchKey} onChange={searchData} />
