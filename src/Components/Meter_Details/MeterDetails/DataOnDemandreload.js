@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
 import DataOnDemand from './DataOnDemand';
 
-const DataOnDemandreload = ({meternum, meterInter}) => {
+const DataOnDemandreload = ({meternum, meterman, meterty}) => {
   const [key, setKey] = useState(0);
 
   const reloadComponent = () => {
@@ -37,7 +37,7 @@ const DataOnDemandreload = ({meternum, meterInter}) => {
             />
         </div>
         </Row>
-        <DataOnDemand key={key} meternum={meternum}/>
+        <DataOnDemand key={key} meternum={meternum} meterman={meterman} meterty={meterty} />
       </Fragment>
   )
 }

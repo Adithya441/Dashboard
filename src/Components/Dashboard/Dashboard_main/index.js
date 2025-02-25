@@ -612,7 +612,7 @@ const Index = () => {
 
   return (
     <Fragment>
-      <div id="pdfdownload">
+      <div>
       <Container fluid>
         <Row className="mb-3">
           <Col xs={12} md={{ span: 4, offset: 3 }}>

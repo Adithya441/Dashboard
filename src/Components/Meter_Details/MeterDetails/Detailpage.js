@@ -54,7 +54,7 @@ const DetailPage = ({ data, office }) => {
     },
     {
       label: "Data On Demand",
-      content: <DataOnDemandreload meternum={data.meterno} />,
+      content: <DataOnDemandreload meternum={data.meterno} meterman={data.metermake} meterty={data.metertype} />,
     },
     {
       label: "Meter Reading",

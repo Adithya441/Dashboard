@@ -183,7 +183,7 @@ const ReLoadCMRITransactionReport = () => {
           </Row>
           <Row className="m-1">
             <Col xs={12} className="text-center mx-auto">
-              <Button onClick={
+              <Button style={{ backgroundColor:'#5cb0e7'}} onClick={
                 (e) => {
                   e.preventDefault();
                   setLoadingStatus('Loading Data');
@@ -198,13 +198,13 @@ const ReLoadCMRITransactionReport = () => {
             <Container fluid>
               <Row className="mt-4">
                 <Col xs={12} md={6} className="d-flex flex-wrap gap-1 mb-3">
-                  <Button variant="primary" size="md" onClick={exportExcel}>
+                  <Button variant="primary" size="md" style={{ backgroundColor:'#5cb0e7'}} onClick={exportExcel}>
                     Excel
                   </Button>
-                  <Button variant="primary" size="md" onClick={exportPDF}>
+                  <Button variant="primary" size="md" style={{ backgroundColor:'#5cb0e7'}} onClick={exportPDF}>
                     PDF
                   </Button>
-                  <Button variant="primary" size="md" onClick={exportCSV}>
+                  <Button variant="primary" size="md" style={{ backgroundColor:'#5cb0e7'}} onClick={exportCSV}>
                     CSV
                   </Button>
                   <Button variant="primary" size="md" onClick={copyData}>

@@ -117,14 +117,26 @@ export default function CommunicationStatus({ officeid }) {
     legend: {
       bottom: "-1%",
       textStyle: {
-        color: "#000", // Legend text color
-        fontSize: 10,  // Legend font size
-        fontWeight: "bold", // Bold text
-        fontFamily: "Arial", // Custom font
+        color: "#000",
+        fontSize: 10,
+        fontWeight: "bold",
+        fontFamily: "Arial",
       },
-      itemWidth: 20, // Legend item (icon) width
-      itemHeight: 10, // Legend item (icon) height
-      icon: "rect", // Icon shape ('circle', 'rect', 'roundRect', 'triangle', 'diamond', 'pin', 'arrow', 'none')
+      itemWidth: 20,
+      itemHeight: 10,
+      icon: "rect",
+    },
+    graphic: {
+      type: "text",
+      left: "center",
+      top: "center",
+      style: {
+        text: `Total: ${total}`,
+        textAlign: "center",
+        fill: "#000",
+        fontSize: 16,
+        fontWeight: "bold",
+      },
     },
     series: [
       {
@@ -132,22 +144,23 @@ export default function CommunicationStatus({ officeid }) {
         type: "pie",
         radius: ["50%", "70%"],
         avoidLabelOverlap: false,
-          label: {
-            show: true, // Enables labels
-            position: "inside", // Position inside the pie slice
-            formatter: "{c}", // Displays only the value
-            fontSize: 14,
-            fontWeight: "bold",
-          },
+        label: {
+          show: true,
+          position: "inside",
+          formatter: "{c}", // Show value inside each slice
+          fontSize: 14,
+          fontWeight: "bold",
+        },
         emphasis: {
           label: {
-            show: true, // Show labels only on hover
-            fontSize: "18",
+            show: false,
+            formatter: "{b}: {c} ({d}%)", // Show name, value, and percentage on hover
+            fontSize: "12",
             fontWeight: "bold",
           },
         },
         labelLine: {
-          show: false, // Hide label lines by default
+          show: false, // Hide label lines inside the chart
         },
         data: labels.map((label, index) => ({
           name: label,
@@ -157,6 +170,7 @@ export default function CommunicationStatus({ officeid }) {
       },
     ],
   };
+  
   
 
   const onChartClick = (params) => {

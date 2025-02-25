@@ -96,6 +96,7 @@ const NonCommunicatedMeters = ({ officeid }) => {
         type: 'bar',
         data: chartData ? chartData.series[0].data : [],
         itemStyle: { color: '#619ED6' },
+        label: { show: true, position: "top" },
       },
     ],
     grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },

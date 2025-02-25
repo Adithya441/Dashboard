@@ -93,6 +93,10 @@ const NonCommunicationMeterStatus = ({ officeid }) => {
 
       // Set chart data options
       setChartData({
+        title: {
+          text: 'Non Communication Meter Status',
+          left: 'center',
+        },
         tooltip: {
           trigger: 'axis',
           axisPointer: { type: 'shadow' },
@@ -106,12 +110,13 @@ const NonCommunicationMeterStatus = ({ officeid }) => {
         },
         legend: {
           orient: 'horizontal',
-          top: 'top', // Position legend
+          top: 'bottom', // Position legend
         },
         grid: {
           left: '3%',  // Increase left margin to avoid label truncation
           right: '5%',
           bottom: '0%',
+          top: '20%',
           containLabel: true
         },
         yAxis: {

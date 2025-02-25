@@ -7,7 +7,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import { ClientSideRowModelModule } from 'ag-grid-community';
 import loadingGif from '../../../Assets/img2.gif';
-
+import Transactionidmodal from './Transactionidmodal';
 import { useState, useEffect } from 'react';
 import './styles.css';
 
@@ -17,11 +17,19 @@ const DynamicOnDemand = ({ meternum, meterty, meterman }) => {
   const [rowData, setRowData] = useState([]);
   const [dataStatus, setDataStatus] = useState();
   const [profileName, setProfileName] = useState();
+  const [modal, setModal] = useState(false);
+  const [transactionId, setTransactionId] = useState('');
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
   const [loading,setLoading]=useState();
+  const onMeterClick = (data) => {
+    setTransactionId(data);
+    setModal(true);
+  };
   const [colDefs, setColDefs] = useState([
-    { field: "transactionId", filter: true, flex: 2, headerName: "Transaction Id" },
+    { field: "transactionId", filter: true, flex: 2, headerName: "Transaction Id" , onCellClicked: (params) => {
+      onMeterClick(params.data.transactionId);
+    },cellClass: "blue-cell", },
     { field: "requestType", filter: true, flex: 2, headerName: "Request Type" },
     { field: "requestFrom", filter: true, flex: 2, headerName: "Request From" },
     { field: "requestTime", filter: true, flex: 2, headerName: "Request Time", valueFormatter: (params) =>{return  formatDateTime(params.value)||"-" } },
@@ -336,7 +344,42 @@ const stripHtml = (html) => {
         </div>
       )
       }
+      {modal && (
+        <div
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: 1050,
+            backgroundColor: "#fff",
+            width: "1100px",
+            borderRadius: "5px",
+            boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.3)",
+            padding: "1em",
+            marginLeft: "50px",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <button
+              onClick={() => setModal(false)}
+              style={{ background: "none", border: "none", fontSize: "1.5rem" }}
+            >
+              &times;
+            </button>
+          </div>
+          <div style={{ maxHeight: "400px", width: "1060px", overflowY: "auto" }}>
+            <Transactionidmodal transactionId={transactionId} meternum={meternum} meterman={meterman} meterty={meterty}/>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1em" }}>
+            <button onClick={() => setModal(false)} style={{ padding: "0.5em 1em", cursor: "pointer" }}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
+    
   );
 }
 

@@ -2,27 +2,39 @@ import { AgGridReact } from 'ag-grid-react';
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import { ClientSideRowModelModule } from 'ag-grid-community';
-
+import Transactionidmodal from './Transactionidmodal';
 import { useState, useEffect } from 'react';
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import './styles.css';
 import * as ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import loadingGif from '../../../Assets/img2.gif';
 
 
-const DataOnDemand = ({ meternum }) => {
+const DataOnDemand = ({ meternum, meterman, meterty }) => {
   const [searchKey, setSearchKey] = useState("");
   const [profileOptions, setProfileOptions] = useState([]);
   const [profileName, setProfileName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [rowData, setRowData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+  const [modal, setModal] = useState(false);
+  const [transactionId, setTransactionId] = useState('');
   const [loadingStatus, setLoadingStatus] = useState('Loading Data');
+  const onMeterClick = (data) => {
+    setTransactionId(data);
+    setModal(true);
+  };
   const [colDefs] = useState([
-    { field: "transactionId", filter: true, flex: 2, headerName: "Transaction ID" },
+    { field: "transactionId", filter: true, flex: 2, headerName: "Transaction ID" ,  onCellClicked: (params) => {
+      onMeterClick(params.data.transactionId);
+    },
+    cellClass: "blue-cell", 
+    },
     { field: "requestType", filter: true, flex: 2, headerName: "Request Type" },
     { field: "requestTime", filter: true, flex: 2, headerName: "Request Time", valueFormatter: (params) =>{return  formatDateTime(params.value)||"-" } },
     { field: "requestFrom", filter: true, flex: 2, headerName: "Request From" },
@@ -84,6 +96,9 @@ const DataOnDemand = ({ meternum }) => {
 
     } catch (err) {
       console.error(err.message);
+    }
+    finally {
+      setLoading(false);
     }
   };
 
@@ -342,6 +357,9 @@ const DataOnDemand = ({ meternum }) => {
               <input type="text" className="form-control" placeholder="search" value={searchKey} onChange={searchData} />
             </div>
           </div>
+          {loading ? (
+        <img src={loadingGif} alt="Loading..." style={{ width: '150px', height: '150px', margin:'50px 350px' }} />
+      ) : (
           <div className="container-fluid ag-theme-quartz mt-3 mx-auto" style={{ height: 350, width: "100%" }}>
             <AgGridReact
               rowData={rowData}
@@ -352,6 +370,7 @@ const DataOnDemand = ({ meternum }) => {
               modules={[ClientSideRowModelModule]}
             />
           </div>
+          )}
         </div>
       ):(
         <div className='text-danger mx-auto text-center'>
@@ -359,6 +378,41 @@ const DataOnDemand = ({ meternum }) => {
           </div>
       )
     }
+
+{modal && (
+        <div
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: 1050,
+            backgroundColor: "#fff",
+            width: "1100px",
+            borderRadius: "5px",
+            boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.3)",
+            padding: "1em",
+            marginLeft: "50px",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <button
+              onClick={() => setModal(false)}
+              style={{ background: "none", border: "none", fontSize: "1.5rem" }}
+            >
+              &times;
+            </button>
+          </div>
+          <div style={{ maxHeight: "400px", width: "1060px", overflowY: "auto" }}>
+            <Transactionidmodal transactionId={transactionId} meternum={meternum} meterman={meterman} meterty={meterty}/>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1em" }}>
+            <button onClick={() => setModal(false)} style={{ padding: "0.5em 1em", cursor: "pointer" }}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

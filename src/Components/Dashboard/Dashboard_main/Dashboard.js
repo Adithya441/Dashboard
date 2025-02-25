@@ -17,6 +17,7 @@ const Dashboard = () => {
 
   return (
     <Fragment>
+      <div id="pdfdownload">
       <Row>
           <div 
             style={{ 
@@ -43,6 +44,7 @@ const Dashboard = () => {
           </div>
         </Row>
         <Index key={key} />
+        </div>
     </Fragment>
   );
 };

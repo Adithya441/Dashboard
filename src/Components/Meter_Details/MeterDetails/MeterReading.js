@@ -9,7 +9,7 @@ import * as ExcelJS from "exceljs";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
-const MeterReading = () => {
+const MeterReading = ({ meternum, meterman, meterty }) => {
   const [profileName, setProfileName] = useState('');
   const [requestType, setRequestType] = useState('');
   const [fromDate, setFromDate] = useState('');
@@ -25,9 +25,9 @@ const MeterReading = () => {
 
   const buildGridUrl = () => {
     const params = new URLSearchParams({
-      meterManfacturer: "ZEN-TP",
-      meterNumber: "Z20000127",
-      meterType: "CT",
+      meterManfacturer: meterman,
+      meterNumber: meternum,
+      meterType: meterty,
     });
     if (profileName) params.append("profileId", profileName);
     if (requestType) params.append("requestType", requestType);
