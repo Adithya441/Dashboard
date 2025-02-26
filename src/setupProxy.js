@@ -12,4 +12,14 @@ module.exports = function(app) {
       },
     })
   );
+  app.use(
+    '/api/server2',
+    createProxyMiddleware({
+      target: 'https://fgamidemo.mpower.in',
+      changeOrigin: true,
+      pathRewrite: {
+        '^/api/server2': '', // Remove the /api/server1 prefix when forwarding the request
+      },
+    })
+  );
 };

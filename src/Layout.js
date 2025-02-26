@@ -45,6 +45,8 @@ import TimeSynchronizationreload from "./Components/Reports/TimeSynchronizationr
 import Exceptionreportreload from "./Components/Reports/ExceptionReportreload";
 import Connectdisconnectreportreload from "./Components/Reports/Connectdisconnetreportreload";
 import { MaxTabsDialog } from "./Components/Meter_Details/MeterDetails/MeterTabslimit";
+import ActivityCalendarreload from "./Components/Configurations/ActivityCalendar/ActivityCalendarreload";
+import DisplayConfigurationTabs from "./Components/Configurations/Display Configuration/DisplayConfigurationTabs";
  
 const { Header, Sider, Content } = Layout;
 const { TabPane } = Tabs;
@@ -77,13 +79,17 @@ const componentsMap = {
   devicemaster: DeviceMasterreload,
   timesynchronization: TimeSynchronizationreload,
   exceptionreport: Exceptionreportreload,
-  connectdisconnectreport: Connectdisconnectreportreload
+  connectdisconnectreport: Connectdisconnectreportreload,
+  activitycalendar: ActivityCalendarreload,
+  displayconfiguration: DisplayConfigurationTabs
   
  
 };
  
 const menuItems = [
   { key: "dashboard", title: "Dashboard" },
+  { key: "Communicationstatistics", title: "Communication Statistics" },
+  { key: "Communicationstatistics", title: "Communication Statistics" },
   { key: "Communicationstatistics", title: "Communication Statistics" },
   { key: "DataAvailability", title: "Data Availability 30 days" },
   { key: "meterdetails", title: "Meter Details" },
@@ -109,8 +115,11 @@ const menuItems = [
   { key: "devicemaster", title: "Device Master"},
   { key: "timesynchronization", title: "Time Synchronization"},
   { key: "exceptionreport", title: "Exception Report"},
-  { key: "connectdisconnectreport", title: "Connect Disconnect Report"}
+  { key: "connectdisconnectreport", title: "Connect Disconnect Report"},
+  { key: "activitycalendar", title: "Activity Calendar"},
+  { key: "displayconfiguration", title: "Display Configuration"}
   
+ 
 ];
 
 const Hello = () => {
@@ -232,6 +241,8 @@ const Hello = () => {
           </SubMenu>
           <SubMenu key="configurations" icon={<UserOutlined />} title="Configurations" style={{ backgroundColor: "#293846", color: "black" , fontSize: "14px", fontWeight: "700" }}>
             <Menu.Item key="eventmapping" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Event Mapping</Menu.Item>
+            <Menu.Item key="activitycalendar" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Activity Calendar</Menu.Item>
+            <Menu.Item key="displayconfiguration" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Display Configuration</Menu.Item>
           </SubMenu>
           <SubMenu key="settings" icon={<SettingOutlined />} title="Meter Details" style={{ backgroundColor: "#293846", color: "black" , fontSize: "14px", fontWeight: "700" }}>
             <Menu.Item key="meterdetails" style={{ paddingLeft: "30px", fontSize: "11px" , fontWeight: "500" }}>Meter Details</Menu.Item>

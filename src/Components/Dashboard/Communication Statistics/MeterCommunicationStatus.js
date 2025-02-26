@@ -4,13 +4,13 @@ import './CommunicationStatistics.css';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
-import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import loadingGif from '../../../Assets/img2.gif';
 import './CommunicationStatistics.css'
+import { Row, Col } from 'react-bootstrap';
 
 const MeterCommunicationStatus = ({ officeid }) => {
   const [chartData, setChartData] = useState(null);
@@ -20,10 +20,12 @@ const MeterCommunicationStatus = ({ officeid }) => {
   const [categorys, setCategory] = useState(null);
   const [selectlabel, setSelectlabel] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [dataavailable, setDataAvailable] = useState(null); // Data availability state
+  
 
   const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
   const baseUrl = `/api/server3/UHES-0.0.1/WS/getmeterCommunicationStatusForWeek?officeid=${officeid}`;
-  
+
   const fetchData = async () => {
     try {
       const tokenResponse = await fetch(tokenUrl, {
@@ -54,8 +56,9 @@ const MeterCommunicationStatus = ({ officeid }) => {
 
       if (!responseData.yData) {
         setLoading(false);
-        return <p>No Data available</p>;
-      } else {
+        setDataAvailable('No Data Available');
+        return;
+      } 
         const labels = responseData.xData || [];
         const communicatedData = responseData.yData[0]?.data || [];
         const notCommunicatedData = responseData.yData[1]?.data || [];
@@ -73,11 +76,10 @@ const MeterCommunicationStatus = ({ officeid }) => {
         });
 
         setLoading(false);
-      }
     } catch (err) {
       console.error(err.message);
-      setChartData(null);
       setLoading(false);
+      setChartData(null);
     }
   };
 
@@ -153,9 +155,10 @@ const MeterCommunicationStatus = ({ officeid }) => {
     ],
   });
   const handleBarClick = (params) => {
-    const { seriesName, name } = params;
-    setSelectlabel(seriesName);  // Set selected label (Meter Communicated or Meter Not Communicated)
-    setSelectedCategory(name);  // Set the selected category (the label on the x-axis)
+    const sName=params.seriesName;
+    const cName=params.name;
+    setSelectlabel(sName);  // Set selected label (Meter Communicated or Meter Not Communicated)
+    setSelectedCategory(cName);  // Set the selected category (the label on the x-axis)
     setShowModal(true);  // Open the modal
   };
 
@@ -164,24 +167,24 @@ const MeterCommunicationStatus = ({ officeid }) => {
     const [data, setData] = useState([]);
     const [mdtloading, setMDTLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [fromDate, setFromDate] = useState(null);
     const [start, setStart] = useState(0);
     const [recordsTotal, setRecordsTotal] = useState(0);
     const length = 10;
     const [exportFormat, setExportFormat] = useState('');
+    const [fromDate,setFromDate]=useState();
     useEffect(() => {
-      const date = new Date(selectedCategory);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-
-      const todaydate = year + month + day;
-      setFromDate(todaydate);
-    })
-
+      if (selectedCategory) {
+        const date = new Date(selectedCategory);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        setFromDate(year + month + day); // Set fromDate only when selectedCategory is available
+      }
+    }, [selectedCategory]);
+    
     const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
 
-    const fetchData = async () => {
+    const fetchModalData = async () => {
       setError(null);
       try {
         const tokenResponse = await fetch(tokenUrl, {
@@ -199,15 +202,17 @@ const MeterCommunicationStatus = ({ officeid }) => {
         if (!tokenResponse.ok) throw new Error('Failed to authenticate');
         const tokenData = await tokenResponse.json();
         const accessToken = tokenData.access_token;
-
+        
         if (selectedLabel === 'Meter Communicated') {
+          console.log(`from date payload: ${fromDate}`);
           const baseUrl = `/api/server3/UHES-0.0.1/WS/ServerpaginationForCommunicationReport?draw=2&fromdate=${fromDate}&length=10&office=${office}&start=0`;
           const dataResponse = await fetch(baseUrl, {
             headers: { 'Authorization': `Bearer ${accessToken}` },
           });
-          const responseData = await dataResponse.json();
-          setRecordsTotal((responseData.data).length || 0); 
+          const responseData = await dataResponse.json();          
+          setRecordsTotal((responseData.data).length || 0);
           setData(responseData.data || []);
+
         }
         else if (selectedLabel === 'Meter Not Communicated') {
           const baseUrl = `/api/server3/UHES-0.0.1/WS/ServerpaginationForNonCommunicationReportInReports?applyMaskingFlag=N&draw=2&length=10&nonCommunicationDate=${fromDate}&officeId=${office}&start=0`;
@@ -215,22 +220,28 @@ const MeterCommunicationStatus = ({ officeid }) => {
             headers: { 'Authorization': `Bearer ${accessToken}` },
           });
           const responseData = await dataResponse.json();
-          setRecordsTotal((responseData.data).length || 0); 
+          setRecordsTotal((responseData.data).length || 0);
+          console.log('modal data got:',responseData.data);
           setData(responseData.data || []);
+          // if((responseData.data).length==0){
+          //   setMDTLoading('Data Not Found');
+          // }
         }
       } catch (err) {
         setError(err.message);
-      } finally {
+      }
+      finally {
         setMDTLoading(false);
       }
     };
 
     useEffect(() => {
-      fetchData();
-    }, [selectedLabel, selectedCategory]);
-
+      if (fromDate) {
+        fetchModalData();
+      }
+    }, [selectedCategory,selectedLabel,fromDate]); 
     const columnDefs = [
-      { headerName: "METERNO", field: "METERNO", flex: 1, filter: true, sortable: true, valueFormatter: (params) => params.value ? params.value : "N/A" },
+      { headerName: "METERNO", field: "Meter Number", flex: 1, filter: true, sortable: true, valueFormatter: (params) => params.value ? params.value : "N/A" },
       { headerName: "MeterLastCommunicated", field: "MeterLastCommunicated", flex: 1, filter: true, sortable: true, valueFormatter: (params) => params.value ? params.value : "N/A" },
     ];
 
@@ -243,7 +254,7 @@ const MeterCommunicationStatus = ({ officeid }) => {
     // Export function for CSV
     const exportToCSV = () => {
       const csvData = data.map(row => ({
-        METERNO: row.METERNO,
+        METERNUMBER: row["Meter Number"],
         MeterLastCommunicated: `"${new Date(row.MeterLastCommunicated).toISOString().split('T')[0]}"` // Wrap date in quotes
       }));
 
@@ -266,14 +277,16 @@ const MeterCommunicationStatus = ({ officeid }) => {
     const exportToExcel = async () => {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Data');
-      const headers = Object.keys(data[0] || {});
+    
+      const headers = ["Meter Number", "MeterLastCommunicated"];
+      
       const title = worksheet.addRow([`Meter Communication Status on ${selectedCategory}`]);
       title.font = { bold: true, size: 16, color: { argb: 'FFFF00' } };
       title.alignment = { horizontal: 'center' };
-      worksheet.mergeCells('A1', `${String.fromCharCode(64 + headers.length)}1`);
-
+      worksheet.mergeCells('A1:B1'); 
+    
       const headerRow = worksheet.addRow(headers);
-
+    
       headerRow.eachCell((cell) => {
         cell.font = { bold: true, color: { argb: 'FFFFFF' } };
         cell.fill = {
@@ -282,16 +295,19 @@ const MeterCommunicationStatus = ({ officeid }) => {
           fgColor: { argb: 'FFADD8E6' },
         };
       });
-
+    
       data.forEach(row => {
-        worksheet.addRow(Object.values(row));
+        worksheet.addRow([
+          row["Meter Number"],  
+          row.MeterLastCommunicated
+        ]);
       });
-
+    
       worksheet.autoFilter = {
         from: 'A2',
-        to: `${String.fromCharCode(64 + headers.length)}2`
+        to: 'B2'
       };
-
+    
       headers.forEach((header, index) => {
         const maxLength = Math.max(
           header.length,
@@ -299,20 +315,21 @@ const MeterCommunicationStatus = ({ officeid }) => {
         );
         worksheet.getColumn(index + 1).width = maxLength + 2;
       });
-
+    
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      saveAs(blob, `MeterCommStatus(${selectedLabel}).xlsx`);
+      saveAs(blob, `MeterCommStatus(${selectedCategory}).xlsx`);
     };
+    
 
     // Export function for PDF
     const exportToPDF = () => {
       const doc = new jsPDF();
-      const tableColumn = ["METERNO", "MeterLastCommunicated"];
+      const tableColumn = ["METERNUMBER", "MeterLastCommunicated"];
       const tableRows = [];
 
       data.forEach(row => {
-        tableRows.push([row.METERNO, row.MeterLastCommunicated]);
+        tableRows.push([row["Meter Number"], row.MeterLastCommunicated]);
       });
 
       doc.autoTable(tableColumn, tableRows);
@@ -359,44 +376,42 @@ const MeterCommunicationStatus = ({ officeid }) => {
         </div>
 
         <div style={{ maxHeight: '70vh', width: '970px', overflowY: 'auto' }}>
-        <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px' }}>
+          <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px' }}>
 
-          {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+            {error && <p style={{ color: 'red' }}>Error: {error}</p>}
 
-          <div>
-            <select
-              id="export-format"
-              value={exportFormat}
-              onChange={(e) => handleExport(e.target.value)}
-              style={{ height: '30px' }}
-            >
-              <option value="">Export</option>
-              <option value="csv">CSV</option>
-              <option value="excel">Excel</option>
-              <option value="pdf">PDF</option>
-            </select>
-          </div>
-
-          {mdtloading ? (
+            <div>
+              <select
+                id="export-format"
+                value={exportFormat}
+                onChange={(e) => handleExport(e.target.value)}
+                style={{ height: '30px' }}
+              >
+                <option value="">Export</option>
+                <option value="csv">CSV</option>
+                <option value="excel">Excel</option>
+                <option value="pdf">PDF</option>
+              </select>
+            </div>           
+           {(mdtloading) ? (
             <img src={loadingGif} alt="Loading..." style={{ width: '150px', height: '150px', margin: '50px 350px' }} />
-          ) : (
+           ) : (
             <div className="ag-theme-alpine" style={{ height: 400, width: '100%', marginTop: '20px' }}>
-              <AgGridReact rowData={data} columnDefs={columnDefs} onGridReady={fetchData} />
+                  <AgGridReact rowData={data} columnDefs={columnDefs} />
+                </div>
+           )}
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ marginLeft: '10px' }}>
+                Page {currentPage} of {totalPages}
+              </span>
+              <span style={{ marginLeft: '10px' }}>
+                {start + 1} to {(currentPage * length > recordsTotal) ? recordsTotal : (currentPage * length)} of {recordsTotal}
+              </span>
+              <button onClick={handlePreviousPage} disabled={start === 0} style={{ backgroundColor: 'black', color: 'white' }}>Previous</button>
+              <button onClick={handleNextPage} disabled={currentPage === totalPages} style={{ backgroundColor: 'black', color: 'white' }}>Next</button>
+
             </div>
-          )}
-
-          <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ marginLeft: '10px' }}>
-              Page {currentPage} of {totalPages}
-            </span>
-            <span style={{ marginLeft: '10px' }}>
-              {start + 1} to {(currentPage * length > recordsTotal) ? recordsTotal : (currentPage * length)} of {recordsTotal}
-            </span>
-            <button onClick={handlePreviousPage} disabled={start === 0} style={{ backgroundColor: 'black', color: 'white' }}>Previous</button>
-            <button onClick={handleNextPage} disabled={currentPage === totalPages} style={{ backgroundColor: 'black', color: 'white' }}>Next</button>
-
           </div>
-        </div>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1em' }}>
@@ -405,16 +420,16 @@ const MeterCommunicationStatus = ({ officeid }) => {
           </button>
         </div>
       </div>
-      
+
     );
   }
-  
+
 
   return (
     <div className='blck19'>
-      <ReactECharts option={getOption()} 
-      style={{width:'100%', height:'calc(100% - 40px)'}}
-      onEvents={{
+      <ReactECharts option={getOption()}
+        style={{ width: '100%', height: 'calc(100% - 40px)' }}
+        onEvents={{
           'click': handleBarClick,  // Trigger handleBarClick when bar is clicked
         }}
       />

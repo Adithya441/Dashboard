@@ -1,0 +1,56 @@
+.input-field,
+.select-field {
+  width: 200px;
+  height: 30px !important;
+  padding: 8px !important;
+  border: 1px solid #ccc;
+  border-radius: 4px !important;
+  font-size: 14px !important;
+  outline: none !important;
+}
+
+.input-field:focus,
+.select-field:focus {
+  border-color: #007bff !important;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5) !important;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: block;
+  height: 25px;
+}
+
+.container {
+  padding: 20px;
+}
+
+.row {
+  margin-bottom: 10px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
+    margin-top: 10px;
+  }
+  
+  .styled-button {
+    background-color: #5cb0e7;
+    border: 1px solid #5cb0e7;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    min-width: 80px;
+    text-align: center;
+  }
+  
+  .styled-button:hover {
+    background-color: #459ed7;
+  }
+  

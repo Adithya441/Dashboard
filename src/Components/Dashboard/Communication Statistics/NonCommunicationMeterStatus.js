@@ -93,10 +93,6 @@ const NonCommunicationMeterStatus = ({ officeid }) => {
 
       // Set chart data options
       setChartData({
-        title: {
-          text: 'Non Communication Meter Status',
-          left: 'center',
-        },
         tooltip: {
           trigger: 'axis',
           axisPointer: { type: 'shadow' },
@@ -110,13 +106,12 @@ const NonCommunicationMeterStatus = ({ officeid }) => {
         },
         legend: {
           orient: 'horizontal',
-          top: 'bottom', // Position legend
+          top: 'top', // Position legend
         },
         grid: {
           left: '3%',  // Increase left margin to avoid label truncation
           right: '5%',
           bottom: '0%',
-          top: '20%',
           containLabel: true
         },
         yAxis: {
@@ -161,7 +156,10 @@ const NonCommunicationMeterStatus = ({ officeid }) => {
 
   // Handle chart click events
   const handleChartClick = (params) => {
-    const { name: category, value } = params.data;
+    console.log('chart params array:',params);
+    // const { name,category, value } = params.data;
+    const category=params.name;
+    const value=params.value;
     const label = params.seriesName;
     setCategory(category);
     setSelectlabel(label);
@@ -176,10 +174,11 @@ const NonCommunicationMeterStatus = ({ officeid }) => {
     const [mdtloading, setMDTLoading] = useState(true);
     const [error, setError] = useState(null);
     const [start, setStart] = useState(0); 
-    const [fromDate, setFromDate] = useState(null);
+    // const [fromDate, setFromDate] = useState(null);
     const [recordsTotal, setRecordsTotal] = useState(0); 
     const length = 10; 
     const [exportFormat, setExportFormat] = useState('');
+    let fromDate;
     useEffect(() => {
           const date = new Date(selectedCategory);
           const year = date.getFullYear();
@@ -187,12 +186,12 @@ const NonCommunicationMeterStatus = ({ officeid }) => {
           const day = String(date.getDate()).padStart(2, '0');
     
           const todaydate = year + month + day;
-          setFromDate(todaydate);
+          fromDate=todaydate;
         })
 
     const tokenUrl = '/api/server3/UHES-0.0.1/oauth/token';
 
-    const fetchData = async () => {
+    const fetchModalData = async () => {
       setError(null);
       console.log(selectedLabel);
       try {
@@ -228,8 +227,8 @@ const NonCommunicationMeterStatus = ({ officeid }) => {
     };
 
     useEffect(() => {
-      fetchData();
-    }, [selectedLabel, selectedCategory]);
+      fetchModalData();
+    }, [selectedLabel, selectedCategory,fromDate]);
 
     const columnDefs = [
       { headerName: "Meter Number", field: "METER_NUMBER", flex: 1, filter: true, sortable: true, valueFormatter: (params) => params.value ? params.value : "N/A" },
@@ -384,7 +383,7 @@ const NonCommunicationMeterStatus = ({ officeid }) => {
               <img src={loadingGif} alt="Loading..." style={{ width: '150px', height: '150px', margin: '50px 350px' }} />
             ) : (
               <div className="ag-theme-alpine" style={{ height: 400, width: '100%', marginTop: '20px' }}>
-                <AgGridReact rowData={data} columnDefs={columnDefs} onGridReady={fetchData} />
+                <AgGridReact rowData={data} columnDefs={columnDefs} />
               </div>
             )}
 

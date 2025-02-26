@@ -174,14 +174,19 @@ export default function CommunicationStatus({ officeid }) {
   
 
   const onChartClick = (params) => {
-    const selectedLabel = params.name
-    const selectedValue = params.value
-    const percentage = ((selectedValue / total) * 100).toFixed(2)
-
-    setSelectedData({ label: selectedLabel, value: selectedValue, percentage })
-    setSelectLabel(selectedLabel)
-    setShowModal(true)
-  }
+    if (params.seriesType !== "pie") {
+      return; // Ignore clicks on anything other than pie chart segments
+    }
+  
+    const selectedLabel = params.name;
+    const selectedValue = params.value;
+    const percentage = ((selectedValue / total) * 100).toFixed(2);
+  
+    setSelectedData({ label: selectedLabel, value: selectedValue, percentage });
+    setSelectLabel(selectedLabel);
+    setShowModal(true);
+  };
+  
 
   return (
     <div className="blck2">
